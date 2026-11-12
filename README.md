@@ -38,7 +38,8 @@ public/               Static assets
 | `/news` | Construction news listing |
 | `/news/[id]` | Individual news update |
 | `/projects` | Project tracking area |
-| `/about` | Portal information |
+| `/feedback` | Community complaints, feedback, status tracking, and report history |
+| `/about` | Portal information and preferences |
 | `/api/news` | Starter news API Route Handler |
 
 ## Getting started
@@ -66,6 +67,12 @@ npm run build
 
 ## Current status
 
-The project currently uses local starter data in `lib/news.ts`. Future work can
-connect this area to a database, CMS, maps, user reports, or verified public
-data sources.
+The project currently uses local starter data in `lib/news.ts` and temporary
+in-memory mock state for the frontend-only feedback prototype. Submitted
+feedback resets when the page is refreshed. Feedback reports include mock
+GeoJSON Point coordinates for the selected area, ready to be replaced by a
+real map picker or backend location service later. Future work can connect
+news and user reports to a database, CMS, or verified public data sources.
+The feedback page also includes a frontend-only Telegram linking mock that
+generates a six-digit code; it does not contact Telegram until backend
+integration is implemented.
