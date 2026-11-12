@@ -24,17 +24,19 @@ Penang LRT development.
 ## Project structure
 
 ```text
-app/                         App Router layouts, pages, loading, and error states
-app/news/                    News listing and dynamic news detail pages
-app/projects/                Construction map and dynamic construction details
-app/notification/            Notification centre
-app/notification-preferences Notification preferences page
-app/admin/                   Staff login and construction management pages
-app/api/news/                News Route Handler API endpoint
-components/                  Reusable UI, shell, navigation, and map components
-lib/                         Local construction, news, and store helpers
-styles/                      Global Tailwind CSS entry point
-public/                      Static icons, logos, and image assets
+app/                           App Router layouts, pages, loading, and error states
+app/news/                      News listing and dynamic news detail pages
+app/projects/                  Construction map and dynamic construction details
+app/feedback/                  Community complaints and feedback centre
+app/notification/              Notification centre
+app/notification-preferences/  Notification preferences page
+app/admin/(dashboard)/         Staff overview, complaints, updates, and announcements
+app/admin/login/               Simulated staff sign-in page
+app/api/news/                  News Route Handler API endpoint
+components/                    Reusable UI, shell, navigation, feedback, and map components
+lib/                           Local construction, feedback, news, admin, and store helpers
+styles/                        Global Tailwind and admin CSS entry points
+public/                        Static icons, logos, and image assets
 ```
 
 ## Routes
@@ -49,13 +51,14 @@ public/                      Static icons, logos, and image assets
 | `/feedback` | Community complaints, feedback, status tracking, and report history |
 | `/notification` | Notification centre with search and filters |
 | `/notification-preferences` | In-app and Telegram notification settings |
-| `/about` | Portal information and preferences |
+| `/feedback` | Submit complaints, feedback, and optional evidence |
+| `/about` | Portal information |
 | `/admin` | Admin and management dashboard overview |
 | `/admin/complaints` | Review, update and assign complaints |
 | `/admin/updates` | Create, edit and remove construction updates |
 | `/admin/announcements` | Publish and review announcements |
 | `/admin/login` | Staff sign-in screen |
-| `/admin/construction` | Staff construction update management |
+| `/admin/construction` | Legacy staff construction management page |
 | `/api/news` | News API Route Handler |
 
 ## Getting started
