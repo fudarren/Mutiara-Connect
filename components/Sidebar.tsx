@@ -48,7 +48,7 @@ export function SidebarView({ pathname }: { pathname: string }) {
         <NavLink href="/" icon="grid" label="Dashboard" active={pathname === "/"} />
         <NavLink href="/projects" icon="map" label="Construction Map" active={on("/projects")} />
         <NavLink href="/news" icon="megaphone" label="Construction News" active={on("/news")} />
-        <NavLink href="/about" icon="problem" label="Report Issue" active={pathname === "/about"} />
+        <NavLink href="/feedback" icon="problem" label="Report Issue" active={on("/feedback")} />
       </nav>
       <nav className="mt-6">
         <p className="mb-3.5 ml-2.5 hidden text-[10px] font-bold uppercase tracking-[0.07em] text-[#718083] sm:block">Communications</p>
