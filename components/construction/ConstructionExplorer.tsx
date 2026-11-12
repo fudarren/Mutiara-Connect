@@ -55,10 +55,10 @@ function UpdateCard({
       <h3 className="mt-2 text-[14px] font-bold leading-5 tracking-[-0.01em]">{update.title}</h3>
       <p className="mt-1 text-[11px] leading-4 text-[#5d686c]">
         {update.affectedRoads.join(", ")}
-        {zone ? ` • ${zone.name}` : ""}
+        {zone ? `, ${zone.name}` : ""}
       </p>
       <p className="mt-1 text-[11px] text-[#748084]">
-        {formatDate(update.startDate)} - {formatDate(update.endDate)} &middot; {update.workingHours}
+        {formatDate(update.startDate)} to {formatDate(update.endDate)}, {update.workingHours}
       </p>
       {full && (
         <>
@@ -283,7 +283,7 @@ export function ConstructionExplorer({
           <span role="status">
             Showing {results.length} of {published.length} published updates
           </span>
-          <span>Times shown in Malaysia time (MYT). Prototype data as of {PROTOTYPE_NOW_LABEL}.</span>
+          <span>Times shown in Malaysia time (MYT). Last updated {PROTOTYPE_NOW_LABEL}.</span>
         </div>
       </section>
 
@@ -365,8 +365,8 @@ export function ConstructionExplorer({
       )}
 
       <p className="mt-6 text-[10px] leading-4 text-[#7a8588]">
-        Illustrative prototype data for the CMT322 project. Alignment, stations and works shown here are not official
-        MRT Corp or Penang government information.
+        Sample information only. The alignment, stations and works shown are not official MRT Corp or Penang
+        government information.
       </p>
     </div>
   );

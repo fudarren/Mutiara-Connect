@@ -6,7 +6,7 @@ import { useState } from "react";
 import { ClosureBadge, DraftBadge, ProgressBadge, WorkTypeBadge } from "@/components/construction/Badges";
 import { UpdateForm } from "@/components/construction/UpdateForm";
 import { closureStatus, formatDate, formatMYT } from "@/lib/construction";
-import { nextUpdateId, removeUpdate, resetUpdates, saveUpdate, useConstructionUpdates } from "@/lib/constructionStore";
+import { nextUpdateId, removeUpdate, saveUpdate, useConstructionUpdates } from "@/lib/constructionStore";
 import { signOut, useHydrated, useStaffSession } from "@/lib/staffSession";
 import type { ConstructionUpdate } from "@/types";
 
@@ -70,7 +70,7 @@ export function ManageConstruction() {
           <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#087b84]">Staff area</div>
           <h1 className="mt-1 text-[31px] leading-[38px] tracking-[-0.04em]">Manage construction entries</h1>
           <p className="mt-1 text-[13px] text-[#5d686c]">
-            Signed in as <b>{session.name}</b> &middot; {session.staffRole} &middot; {session.department} &middot; Zone:{" "}
+            Signed in as <b>{session.name}</b>, {session.staffRole}, {session.department}. Zone:{" "}
             {session.assignedZone}
           </p>
         </div>
@@ -166,19 +166,10 @@ export function ManageConstruction() {
         </table>
       </section>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#7a8588]">
-        <span>
-          Changes are saved in this browser only (prototype). They appear immediately on the public{" "}
-          <Link href="/projects" className="font-semibold text-[#087b84] hover:underline">construction map</Link>.
-        </span>
-        <button
-          type="button"
-          onClick={() => { resetUpdates(); setEditing(null); setConfirmId(null); setMessage("Demo data restored."); }}
-          className="rounded bg-[#e8edf1] px-3 py-2 text-[11px] font-semibold text-[#25363d] hover:bg-[#d9e2e7]"
-        >
-          Reset demo data
-        </button>
-      </div>
+      <p className="mt-4 text-[11px] text-[#7a8588]">
+        Changes appear immediately on the public{" "}
+        <Link href="/projects" className="font-semibold text-[#087b84] hover:underline">construction map</Link>.
+      </p>
     </div>
   );
 }

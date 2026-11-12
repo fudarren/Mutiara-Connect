@@ -4,9 +4,8 @@ import { useSyncExternalStore } from "react";
 import type { StaffSession } from "@/types";
 
 /*
- * Prototype-only sign-in for the "Log In" use case. These demo accounts are
- * hard-coded on purpose: Part A has no server, so there is no real security
- * here. Part B replaces this with server-side authentication and roles.
+ * Sample accounts are hard-coded; sign-in is simulated locally and does not
+ * provide server-side authentication or security.
  */
 
 type DemoAccount = StaffSession & { password: string };

@@ -57,6 +57,7 @@ export function SidebarView({ pathname }: { pathname: string }) {
       </nav>
       <nav className="mt-6">
         <p className="mb-3.5 ml-2.5 hidden text-[10px] font-bold uppercase tracking-[0.07em] text-[#718083] sm:block">Staff</p>
+        <NavLink href="/admin" icon="grid" label="Admin Dashboard" active={pathname === "/admin"} />
         <NavLink href="/admin/construction" icon="shield" label="Manage Entries" active={on("/admin")} />
       </nav>
       <div className="mt-auto hidden rounded-[3px] bg-[#f0f4f6] p-2.5 text-[#637075] sm:block">
