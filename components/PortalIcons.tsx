@@ -11,6 +11,11 @@ const publicIcons: Record<string, string> = {
   grid: "/dashboard-black.png",
   map: "/map-black.png",
   megaphone: "/loud-speaker-black.png",
+  accept: "/accept.png",
+  close: "/close.png",
+  round: "/round.png",
+  link: "/link.png",
+  moon: "/moon.png",
 };
 
 export function PortalIcon({

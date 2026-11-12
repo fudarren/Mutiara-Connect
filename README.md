@@ -1,13 +1,16 @@
 # Mutiara-Connect
 
-Mutiara-Connect is a community portal for tracking construction news and
-project updates related to the Penang LRT development.
+Mutiara-Connect is a community portal for tracking construction news,
+project updates, road diversions, and public notifications related to the
+Penang LRT development.
 
 ## Project goals
 
 - Make current construction updates easier for the community to follow.
 - Organize updates by project, location, status, and publication date.
-- Provide a foundation for future maps, user reports, and project milestones.
+- Provide interactive construction maps, project details, and location-based
+  updates.
+- Give users responsive notification preferences and unread-alert navigation.
 
 ## Tech stack
 
@@ -16,18 +19,22 @@ project updates related to the Penang LRT development.
 - TypeScript
 - Tailwind CSS 4
 - ESLint
+- Leaflet for interactive construction maps
 
 ## Project structure
 
 ```text
-app/                  App Router layouts, pages, loading, and error states
-app/news/             News listing and dynamic news detail pages
-app/api/news/         News Route Handler API endpoint
-components/           Reusable UI components
-lib/                  Data access and domain helpers
-types/                Shared TypeScript types
-styles/               Global Tailwind CSS entry point
-public/               Static assets
+app/                         App Router layouts, pages, loading, and error states
+app/news/                    News listing and dynamic news detail pages
+app/projects/                Construction map and dynamic construction details
+app/notification/            Notification centre
+app/notification-preferences Notification preferences page
+app/admin/                   Staff login and construction management pages
+app/api/news/                News Route Handler API endpoint
+components/                  Reusable UI, shell, navigation, and map components
+lib/                         Local construction, news, and store helpers
+styles/                      Global Tailwind CSS entry point
+public/                      Static icons, logos, and image assets
 ```
 
 ## Routes
@@ -37,15 +44,19 @@ public/               Static assets
 | `/` | Portal homepage and latest updates |
 | `/news` | Construction news listing |
 | `/news/[id]` | Individual news update |
-| `/projects` | Project tracking area |
+| `/projects` | Interactive construction map and project list |
+| `/projects/[id]` | Individual construction update details |
 | `/feedback` | Community complaints, feedback, status tracking, and report history |
+| `/notification` | Notification centre with search and filters |
+| `/notification-preferences` | In-app and Telegram notification settings |
 | `/about` | Portal information and preferences |
-| `/api/news` | Starter news API Route Handler |
 | `/admin` | Admin and management dashboard overview |
 | `/admin/complaints` | Review, update and assign complaints |
 | `/admin/updates` | Create, edit and remove construction updates |
 | `/admin/announcements` | Publish and review announcements |
-| `/admin/construction` | Existing construction module's staff management page |
+| `/admin/login` | Staff sign-in screen |
+| `/admin/construction` | Staff construction update management |
+| `/api/news` | News API Route Handler |
 
 ## Getting started
 
@@ -62,6 +73,15 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Responsive navigation and notifications
+
+- Desktop uses a fixed left navigation sidebar.
+- Mobile uses a right-side sliding navigation drawer with labelled menu items.
+- The header notification bell opens a popover containing all unread alerts.
+- Notification cards and alert actions link to their related construction detail
+  pages.
+- The footer is shown on larger screens and hidden on mobile to preserve space.
 
 Development access also supports `127.0.0.1` and `127.0.0.2`. These loopback
 hosts are explicitly allowed for Next.js dev resources, including hot reload;
@@ -108,12 +128,13 @@ shows credentials, so use staff ID `STF-1001` with password `mutiara2026`
 
 ## Current status
 
-The project currently uses local starter data in `lib/news.ts` and temporary
-in-memory mock state for the frontend-only feedback prototype. Submitted
-feedback resets when the page is refreshed. Feedback reports include mock
-GeoJSON Point coordinates for the selected area, ready to be replaced by a
-real map picker or backend location service later. Future work can connect
-news and user reports to a database, CMS, or verified public data sources.
+The project currently uses local data and browser-local construction update
+storage plus temporary in-memory mock state for the frontend-only feedback
+prototype. Submitted feedback resets when the page is refreshed. Feedback
+reports include mock GeoJSON Point coordinates for selected areas, and future
+work can connect this area to a database, CMS, authentication, and verified
+public data sources.
+
 The feedback page also includes a frontend-only Telegram linking mock that
 generates a six-digit code; it does not contact Telegram until backend
 integration is implemented.
