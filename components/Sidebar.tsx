@@ -42,7 +42,7 @@ function SidebarContents({ pathname, onNavigate, showLabels = false }: { pathnam
         <NavLink href="/" icon="grid" label="Dashboard" active={pathname === "/"} onClick={onNavigate} showLabel={showLabels} />
         <NavLink href="/projects" icon="map" label="Construction Map" active={on("/projects")} onClick={onNavigate} showLabel={showLabels} />
         <NavLink href="/news" icon="megaphone" label="Construction News" active={on("/news")} onClick={onNavigate} showLabel={showLabels} />
-        <NavLink href="/about" icon="problem" label="Report Issue" active={pathname === "/about"} onClick={onNavigate} showLabel={showLabels} />
+        <NavLink href="/feedback" icon="problem" label="Report Issue" active={on("/feedback")} onClick={onNavigate} showLabel={showLabels} />
       </nav>
       <nav className="mt-6">
         <p className="mb-3.5 ml-2.5 hidden text-[10px] font-bold uppercase tracking-[0.07em] text-[#718083] sm:block">Communications</p>
@@ -51,6 +51,7 @@ function SidebarContents({ pathname, onNavigate, showLabels = false }: { pathnam
       </nav>
       <nav className="mt-6">
         <p className="mb-3.5 ml-2.5 hidden text-[10px] font-bold uppercase tracking-[0.07em] text-[#718083] sm:block">Staff</p>
+        <NavLink href="/admin" icon="grid" label="Admin Dashboard" active={pathname === "/admin"} onClick={onNavigate} showLabel={showLabels} />
         <NavLink href="/admin/construction" icon="shield" label="Manage Entries" active={on("/admin")} onClick={onNavigate} showLabel={showLabels} />
       </nav>
     </>

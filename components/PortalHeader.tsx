@@ -87,7 +87,7 @@ export function PortalHeader() {
   );
 }
 
-export function OfficialBar() {
+export function InformationBar() {
   return (
     <div className="flex h-[29px] shrink-0 items-center bg-[#deedfb] px-3 text-[10px] tracking-[0.03em] text-[#4e6775] sm:px-[22px]">
       <span className="flex items-center gap-1.5"><PortalIcon name="shield" size={14} />Mutiara LRT Connect &bull; Official Public Works Notification System</span>

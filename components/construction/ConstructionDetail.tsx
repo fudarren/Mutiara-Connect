@@ -91,7 +91,7 @@ export function ConstructionDetail({ updateId }: { updateId: string }) {
   return (
     <div className="mx-auto w-full max-w-[1130px] px-3 py-6 text-[#181c1e] sm:px-5 sm:py-7">
       <nav aria-label="Breadcrumb" className="mb-4 text-[11px] text-[#718083]">
-        <Link href="/projects" className="font-semibold text-[#087b84] hover:underline">&larr; Construction Map</Link>
+        <Link href="/projects" className="font-semibold text-[#087b84] hover:underline">Back to Construction Map</Link>
         <span aria-hidden="true"> / </span>
         <span>{update.updateId.toUpperCase()}</span>
       </nav>
@@ -108,10 +108,10 @@ export function ConstructionDetail({ updateId }: { updateId: string }) {
         <h1 className="mt-3 text-[29px] leading-[36px] tracking-[-0.04em]">{update.title}</h1>
         <p className="mt-1 text-[13px] text-[#5d686c]">
           {update.affectedRoads.join(", ")}
-          {zone ? ` • ${zone.name}` : ""}
+          {zone ? `, ${zone.name}` : ""}
         </p>
         <p className="mt-1 text-[11px] text-[#7a8588]">
-          Last updated {formatMYT(update.lastUpdated)} &middot; ID {update.updateId.toUpperCase()}
+          Last updated {formatMYT(update.lastUpdated)}, ID {update.updateId.toUpperCase()}
         </p>
       </header>
 

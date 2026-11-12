@@ -100,6 +100,10 @@ export function PortalIcon({
     megaphone: <><path d="m3 11 18-5v12L3 14v-3Z" /><path d="M11 16v4M7 15l-2 4" /></>,
     sliders: <><path d="M4 6h16M4 12h16M4 18h16" /><circle cx="8" cy="6" r="2" fill="currentColor" /><circle cx="16" cy="12" r="2" fill="currentColor" /><circle cx="10" cy="18" r="2" fill="currentColor" /></>,
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
+    check: <path d="m5 12 4 4L19 6" />,
+    copy: <><rect x="9" y="9" width="10" height="10" rx="1" /><path d="M5 15V6a1 1 0 0 1 1-1h9" /></>,
+    refresh: <><path d="M20 11a8 8 0 0 0-14.9-3L3 11" /><path d="M3 5v6h6" /><path d="M4 13a8 8 0 0 0 14.9 3L21 13" /><path d="M21 19v-6h-6" /></>,
+    send: <><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></>,
   };
 
   return <svg aria-hidden="true" {...common}>{paths[name]}</svg>;

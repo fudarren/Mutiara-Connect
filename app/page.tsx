@@ -6,6 +6,7 @@ const modules = [
   { href: "/projects", icon: "map", title: "Construction Map", text: "See road closures, detours and construction zones on an interactive map, or browse them as a list." },
   { href: "/news", icon: "megaphone", title: "Construction News", text: "Read community-friendly updates about planning milestones and works along the line." },
   { href: "/notification", icon: "bell", title: "Notifications", text: "Review urgent alerts and construction announcements, and search your notification history." },
+  { href: "/feedback", icon: "problem", title: "Report an Issue", text: "Submit a complaint or feedback, attach optional evidence, and track your report status." },
   { href: "/admin/construction", icon: "shield", title: "Staff: Manage Entries", text: "Authorised officers sign in to add, edit or remove construction entries and mark affected areas." },
 ];
 

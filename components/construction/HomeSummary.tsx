@@ -39,7 +39,7 @@ export function HomeSummary() {
       <section aria-label="Latest construction updates" className="mt-6 rounded-md border border-[#e7ecef] bg-white p-4 shadow-[0_1px_2px_#dfe7eb]">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-[16px] font-bold tracking-[-0.02em]">Latest construction updates</h2>
-          <Link href="/projects" className="text-[12px] font-semibold text-[#087b84] hover:underline">View all on map &rarr;</Link>
+          <Link href="/projects" className="text-[12px] font-semibold text-[#087b84] hover:underline">View all on map</Link>
         </div>
         <ul className="mt-3 grid gap-2.5">
           {latest.map((u) => (
@@ -53,7 +53,7 @@ export function HomeSummary() {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[10px] text-[#7a8588]">Prototype data as of {PROTOTYPE_NOW_LABEL}.</p>
+        <p className="mt-3 text-[10px] text-[#7a8588]">Last updated {PROTOTYPE_NOW_LABEL}.</p>
       </section>
     </>
   );

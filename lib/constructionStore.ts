@@ -5,10 +5,8 @@ import { seedUpdates } from "@/lib/construction";
 import type { ConstructionUpdate } from "@/types";
 
 /*
- * Prototype "database" for Part A: the seed data lives in code and staff edits
- * are kept in this browser's localStorage so the public map, list and detail
- * pages all reflect what staff add, edit or remove. Part B replaces this with
- * a real server + database.
+ * Construction updates are kept in this browser's localStorage. Public and
+ * staff pages read the same local records; there is no server synchronization.
  */
 
 const KEY = "mutiara-construction-updates-v1";
