@@ -9,12 +9,10 @@ import type {
 } from "@/types";
 
 /* ---------------------------------------------------------------------------
- * ILLUSTRATIVE PROTOTYPE DATA - not official MRT Corp / Penang information.
- * Part A needs no backend, so everything below is mock data shaped like the
- * ConstructionUpdate / Zone / Station classes in the Class Diagram.
+ * Sample construction records; not official MRT Corp or Penang information.
  * ------------------------------------------------------------------------- */
 
-/** Fixed "today" (Malaysia time) so the prototype behaves the same on every visit. */
+/** Fixed date for the sample construction timeline, in Malaysia time. */
 export const PROTOTYPE_TODAY = "2026-11-10";
 export const PROTOTYPE_NOW_LABEL = "10 Nov 2026, 9:00 AM MYT";
 
@@ -165,7 +163,7 @@ export const seedUpdates: ConstructionUpdate[] = [
     updateId: "cu-004",
     title: "Komtar Station Box - Jalan Penang Lane Closure",
     description:
-      "Excavation of the Komtar station box requires closing the kerbside lane on Jalan Penang. Two lanes remain open to traffic; buses are rerouted via Lebuh Light.",
+      "Excavation of the Komtar station box requires closing the kerbside lane on Jalan Penang. Two lanes remain open to traffic and buses are rerouted via Lebuh Light.",
     workType: "Lane Closure",
     affectedRoads: ["Jalan Penang", "Lebuh Light"],
     affectedArea: areaAround(5.4148, 100.3292, 0.0012, 0.0018),
@@ -177,7 +175,7 @@ export const seedUpdates: ConstructionUpdate[] = [
       "Komtar-facing shopfronts remain open. Customers use the Lebuh Light entrance while hoarding is in place.",
     startDate: "2026-10-15",
     endDate: "2027-02-28",
-    workingHours: "Daily, 22:00 - 06:00 (lane closed); site works 24 hours",
+    workingHours: "Daily, 22:00 to 06:00 with the lane closed. Site works run 24 hours.",
     impactLevel: "High",
     status: "Under construction",
     isUrgent: false,
@@ -230,7 +228,7 @@ export const seedUpdates: ConstructionUpdate[] = [
     updateId: "cu-007",
     title: "Weld Quay Utility Relocation",
     description:
-      "Underground utilities are being relocated ahead of station construction. Traffic flow is maintained; occasional flagmen are on duty.",
+      "Underground utilities are being relocated ahead of station construction. Traffic flow is maintained and flagmen are on duty when needed.",
     workType: "Utility Relocation",
     affectedRoads: ["Pesara King Edward"],
     affectedArea: areaAround(5.414, 100.344, 0.001, 0.0016),
@@ -257,7 +255,7 @@ export const seedUpdates: ConstructionUpdate[] = [
     affectedArea: areaAround(5.3225, 100.2885, 0.0014, 0.002),
     detourRoutes: null,
     pedestrianRoutes: null,
-    pedestrianAccessInfo: "Use the pedestrian overpass near the mall; the at-grade crossing is closed.",
+    pedestrianAccessInfo: "Use the pedestrian overpass near the mall. The at-grade crossing is closed.",
     businessAccessInfo: "Mall and shoplot entrances stay open. Peak-hour access may be slower.",
     startDate: "2026-07-20",
     endDate: "2027-05-30",

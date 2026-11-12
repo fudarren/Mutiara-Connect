@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { demoAccounts, signIn, signOut, useStaffSession } from "@/lib/staffSession";
+import { signIn, signOut, useStaffSession } from "@/lib/staffSession";
 
 export default function StaffLoginPage() {
   const router = useRouter();
@@ -26,14 +26,12 @@ export default function StaffLoginPage() {
     router.push("/admin/construction");
   }
 
-  const demo = demoAccounts[0];
-
   return (
     <div className="mx-auto w-full max-w-[520px] px-3 py-10 text-[#181c1e] sm:px-5">
-      <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#087b84]">Authorised staff only</div>
+      <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#087b84]">Staff access</div>
       <h1 className="mt-1 text-[29px] leading-[36px] tracking-[-0.04em]">Staff log in</h1>
       <p className="mt-1 text-[14px] leading-[21px] text-[#5d686c]">
-        Authority officers, project officers and administrators sign in to manage construction entries.
+        Sign in to manage construction entries.
       </p>
 
       {session ? (
@@ -83,19 +81,8 @@ export default function StaffLoginPage() {
         </form>
       )}
 
-      <aside className="mt-4 rounded-md border border-dashed border-[#cbd6dc] bg-[#f7fafb] p-4 text-[12px] leading-[18px] text-[#5d686c]">
-        <b className="text-[#25363d]">Prototype demo account</b>
-        <br />
-        Staff ID: <code className="rounded bg-white px-1">{demo.staffId}</code> &nbsp; Password:{" "}
-        <code className="rounded bg-white px-1">{demo.password}</code>
-        <br />
-        <span className="text-[11px]">
-          Part A has no server, so sign-in is simulated in the browser. Real authentication and roles come in Part B.
-        </span>
-      </aside>
-
       <p className="mt-4 text-center text-[12px]">
-        <Link href="/projects" className="font-semibold text-[#087b84] hover:underline">&larr; Back to the public construction map</Link>
+        <Link href="/projects" className="font-semibold text-[#087b84] hover:underline">Back to the public construction map</Link>
       </p>
     </div>
   );

@@ -73,13 +73,13 @@ function popupNode(u: ConstructionUpdate, link: boolean, navigate: (href: string
     return el;
   };
   line(u.title, "text-[13px] font-bold");
-  line(`${u.workType} · ${u.status}`);
+  line(`${u.workType}, ${u.status}`);
   line(`Road status: ${closureStatus(u)}`, "font-semibold");
   line(`${formatDate(u.startDate)} - ${formatDate(u.endDate)}`);
   if (link) {
     const a = document.createElement("a");
     a.href = `/projects/${u.updateId}`;
-    a.textContent = "View details →";
+    a.textContent = "View details";
     a.addEventListener("click", (e) => {
       e.preventDefault();
       navigate(a.getAttribute("href") ?? "/projects");
