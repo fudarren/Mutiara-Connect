@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ConstructionNews } from "@/types";
+import { PortalIcon } from "./PortalIcons";
 import { StatusBadge } from "./StatusBadge";
 
 type NewsCardProps = {
@@ -8,21 +9,19 @@ type NewsCardProps = {
 
 export function NewsCard({ article }: NewsCardProps) {
   return (
-    <article className="rounded-2xl border border-[#d5e0da] bg-white p-6">
-      <div className="flex items-center justify-between gap-3 text-xs text-[#61716d]">
+    <article className="rounded-md border border-[#e7ecef] bg-white p-4 shadow-[0_1px_2px_#dfe7eb]">
+      <div className="flex items-center justify-between gap-3 text-[11px] text-[#5d686c]">
         <StatusBadge status={article.status} />
         <time dateTime={article.publishedAt}>{article.publishedAt}</time>
       </div>
-      <h3 className="mt-5 text-xl font-semibold tracking-[-0.03em]">
-        {article.title}
-      </h3>
-      <p className="mt-3 leading-7 text-[#61716d]">{article.summary}</p>
-      <p className="mt-4 text-sm text-[#61716d]">{article.location}</p>
+      <h2 className="mt-3 text-[16px] font-bold leading-6 tracking-[-0.02em]">{article.title}</h2>
+      <p className="mt-2 text-[13px] leading-5 text-[#5c686d]">{article.summary}</p>
+      <p className="mt-3 text-[11px] text-[#748084]">{article.location}</p>
       <Link
-        className="mt-5 inline-block font-semibold text-[#176b61]"
+        className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#087b84] hover:underline"
         href={`/news/${article.id}`}
       >
-        Read update -&gt;
+        Read update <PortalIcon name="arrow" size={14} />
       </Link>
     </article>
   );
