@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PortalIcon } from "./PortalIcons";
 
 export function PortalHeader() {
@@ -12,15 +13,26 @@ export function PortalHeader() {
           <small className="block text-[10px] uppercase tracking-[0.04em] text-[#566166]">Community Hub</small>
         </span>
       </div>
-      <label className="hidden h-[31px] w-[215px] items-center gap-2 rounded-[3px] bg-[#f1f4f6] px-2.5 text-xs text-[#586368] sm:flex">
+      <form
+        action="/projects"
+        method="get"
+        role="search"
+        className="hidden h-[31px] w-[215px] items-center gap-2 rounded-[3px] bg-[#f1f4f6] px-2.5 text-xs text-[#586368] sm:flex"
+      >
         <PortalIcon name="search" size={16} />
-        <input className="w-full min-w-0 bg-transparent outline-none placeholder:text-[#586368]" placeholder="Search stations, line updates, or reports" />
-      </label>
+        <input
+          name="q"
+          type="search"
+          aria-label="Search construction updates"
+          className="w-full min-w-0 bg-transparent outline-none placeholder:text-[#586368]"
+          placeholder="Search roads, areas or updates"
+        />
+      </form>
       <div className="ml-auto flex items-center gap-5">
-        <button className="group relative grid size-[31px] place-items-center rounded bg-[#f4f6f7] text-[#526066] hover:bg-[#087b84] hover:text-white" aria-label="Notifications">
+        <Link href="/notification" className="group relative grid size-[31px] place-items-center rounded bg-[#f4f6f7] text-[#526066] hover:bg-[#087b84] hover:text-white" aria-label="Notifications (3 unread)">
           <PortalIcon name="bell" />
           <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-[#c9222b] px-1 text-[10px] font-bold text-white">3</span>
-        </button>
+        </Link>
         <div className="hidden items-center gap-2 text-right sm:flex">
           <span><strong className="block text-xs">Ahmad R.</strong><small className="block text-[9px] text-[#566166]">Public Stakeholder</small></span>
           <span className="grid size-[27px] place-items-center rounded-full bg-[#087b84] text-white">A</span>
