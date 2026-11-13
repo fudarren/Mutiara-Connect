@@ -1,5 +1,49 @@
 @import "tailwindcss";
 
+.portal-footer {
+  flex-shrink: 0;
+  border-top: 1px solid #dce3e9;
+  background: #f5f7f9;
+  color: #546371;
+}
+.portal-footer-inner { max-width: 1440px; margin: 0 auto; padding: 30px 24px 18px; }
+.portal-footer-content { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr)); gap: 32px; }
+.portal-footer-brand { display: inline-flex; align-items: center; gap: 10px; color: #1d3d67; }
+.portal-footer-logo { position: relative; width: 46px; height: 34px; flex: 0 0 46px; overflow: hidden; }
+.portal-footer-logo img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  max-width: none;
+  transform: translate(-50%, -50%);
+}
+.portal-footer-brand strong { display: block; font-size: 15px; line-height: 1.4; }
+.portal-footer-brand small { display: block; margin-top: 2px; color: #657482; font-size: 11px; }
+.portal-footer-intro p { max-width: 290px; margin: 12px 0 0; font-size: 12px; line-height: 1.7; }
+.portal-footer-links h2 { margin: 0 0 12px; color: #2d4154; font-size: 13px; font-weight: 700; }
+.portal-footer-links ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.portal-footer-links a, .portal-footer-shortcuts a { font-size: 12px; line-height: 1.6; }
+.portal-footer a:hover, .admin .portal-footer a:hover { color: #1d3d67; text-decoration: underline; text-underline-offset: 3px; }
+.portal-footer-bottom { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; border-top: 1px solid #dce3e9; padding-top: 14px; }
+.portal-footer-bottom small { color: #657482; font-size: 11px; }
+.portal-footer--admin .portal-footer-inner { padding: 20px 36px 16px; }
+.portal-footer--admin .portal-footer-content { display: flex; align-items: center; justify-content: space-between; }
+.portal-footer-shortcuts { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.portal-footer--admin .portal-footer-bottom { margin-top: 18px; }
+
+@media (max-width: 1000px) {
+  .portal-footer-content { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .portal-footer-intro { grid-column: 1 / -1; }
+  .portal-footer--admin .portal-footer-inner { padding-right: 20px; padding-left: 20px; }
+  .portal-footer--admin .portal-footer-content { align-items: flex-start; flex-direction: column; gap: 16px; }
+}
+@media (max-width: 650px) {
+  .portal-footer-bottom { flex-direction: column; gap: 6px; }
+  .portal-footer-shortcuts { gap: 10px 18px; }
+}
+
 /* Visible keyboard focus everywhere (accessibility requirement). */
 a:focus-visible,
 button:focus-visible,

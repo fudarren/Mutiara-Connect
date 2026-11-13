@@ -1,9 +1,10 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useHydrated, useUserSession } from "@/lib/session";
 import { PortalFooter } from "./PortalFooter";
 import { InformationBar, PortalHeader } from "./PortalHeader";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { MobileSidebar, Sidebar, SidebarView } from "./Sidebar";
 
 function PublicPortalShell({ children }: { children: React.ReactNode }) {
@@ -29,8 +30,23 @@ function PublicPortalShell({ children }: { children: React.ReactNode }) {
 
 function ShellForPath({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const hydrated = useHydrated();
+  const { user } = useUserSession();
   const dashboardRoutes = ["/admin", "/admin/complaints", "/admin/updates", "/admin/announcements"];
+  const loginRoute = pathname === "/login" || pathname === "/admin/login";
+  const adminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
 
+  useEffect(() => {
+    if (!hydrated || loginRoute) return;
+    if (!user) router.replace("/login");
+    else if (adminRoute && user.role !== "admin") router.replace("/");
+  }, [hydrated, loginRoute, adminRoute, user, router]);
+
+  if (loginRoute) return <>{children}</>;
+  if (!hydrated || !user || (adminRoute && user.role !== "admin")) {
+    return <main className="flex min-h-screen items-center justify-center text-sm text-[#5d6974]" role="status">Opening your workspace...</main>;
+  }
   if (dashboardRoutes.includes(pathname)) return <>{children}</>;
   return <PublicPortalShell>{children}</PublicPortalShell>;
 }

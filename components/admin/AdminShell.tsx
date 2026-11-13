@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { AdminIcon } from "./AdminIcon";
+import { useUserSession } from "@/lib/session";
+import { SignOutButton } from "@/components/SignOutButton";
+import { PortalFooter } from "@/components/PortalFooter";
 
 const navigation = [
   { href: "/admin", label: "Overview", icon: "overview" },
@@ -15,6 +18,7 @@ const navigation = [
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { user } = useUserSession();
 
   return (
     <div className="admin">
@@ -39,6 +43,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="admin-sidebar-bottom">
           <Link className="admin-back-link" href="/"><AdminIcon name="external" size={16} /> Community portal</Link>
+          <SignOutButton className="admin-button admin-button--secondary" />
         </div>
       </aside>
 
@@ -46,16 +51,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <header className="admin-topbar">
           <strong>Management portal</strong>
           <div className="admin-identity">
-            <span className="admin-avatar" aria-hidden="true">PN</span>
-            <span><strong>Priya Nair</strong><small>Administrator</small></span>
+            <span className="admin-avatar" aria-hidden="true">{user?.name.split(" ").map((part) => part[0]).join("")}</span>
+            <span><strong>{user?.name}</strong><small>Administrator</small></span>
           </div>
         </header>
         <main className="admin-main" id="admin-main" tabIndex={-1}>
           {children}
         </main>
-        <footer className="admin-footer">
-          <span>Copyright 2026 Mutiara Connect</span>
-        </footer>
+        <PortalFooter variant="admin" />
       </div>
     </div>
   );

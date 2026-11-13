@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { PortalIcon } from "./PortalIcons";
+import { useUserSession } from "@/lib/session";
+import { SignOutButton } from "./SignOutButton";
 
 const unreadNotifications = [
   { type: "Urgent alert", title: "Temporary Road Diversion Near Station Area B", text: "A temporary diversion is in place around an active construction access point.", href: "/projects/cu-001" },
@@ -11,6 +13,7 @@ const unreadNotifications = [
 ];
 
 export function PortalHeader() {
+  const { user } = useUserSession();
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
 
@@ -79,8 +82,8 @@ export function PortalHeader() {
           )}
         </div>
         <div className="hidden items-center gap-2 text-right sm:flex">
-          <span><strong className="block text-xs">Ahmad R.</strong><small className="block text-[9px] text-[#566166]">Public Stakeholder</small></span>
-          <span className="grid size-[27px] place-items-center rounded-full bg-[#087b84] text-white">A</span>
+          <span><strong className="block text-xs">{user?.name}</strong><small className="block text-[9px] text-[#566166]">{user?.role === "admin" ? "Administrator" : "Public user"}</small></span>
+          <SignOutButton className="flex min-h-8 items-center justify-center rounded bg-[#e8edf1] px-3 text-xs font-semibold text-[#25363d]" />
         </div>
       </div>
     </header>

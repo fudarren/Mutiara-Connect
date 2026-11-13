@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: "A community portal for following Penang LRT construction news.",
 };
 
+// Routes wait for the browser-only session before rendering their content.
+export const instant = false;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
