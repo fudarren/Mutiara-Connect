@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useUserSession } from "@/lib/session";
 import { HomeSummary } from "@/components/construction/HomeSummary";
 import { PortalIcon } from "@/components/PortalIcons";
 
@@ -11,6 +14,8 @@ const modules = [
 ];
 
 export default function HomePage() {
+  const { user } = useUserSession();
+  const visibleModules = modules.filter((module) => !module.href.startsWith("/admin/") || user?.role === "admin");
   return (
     <div className="mx-auto w-full max-w-[1130px] px-3 py-6 text-[#181c1e] sm:px-5 sm:py-7">
       <div className="mb-6">
@@ -27,7 +32,7 @@ export default function HomePage() {
       <HomeSummary />
 
       <section aria-label="Portal modules" className="mt-6 grid gap-3 md:grid-cols-2">
-        {modules.map((m) => (
+        {visibleModules.map((m) => (
           <Link
             key={m.href}
             href={m.href}

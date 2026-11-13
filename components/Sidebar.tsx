@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { PortalIcon } from "./PortalIcons";
+import { useUserSession } from "@/lib/session";
+import { SignOutButton } from "./SignOutButton";
 
 const base =
   "group flex h-[38px] items-center justify-center gap-2.5 rounded-[3px] px-2.5 text-[13px] font-semibold sm:justify-start";
@@ -34,6 +36,7 @@ function NavLink({ href, icon, label, active: isActive, badge, onClick, showLabe
 
 function SidebarContents({ pathname, onNavigate, showLabels = false }: { pathname: string; onNavigate?: () => void; showLabels?: boolean }) {
   const on = (prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
+  const { user } = useUserSession();
 
   return (
     <>
@@ -49,11 +52,11 @@ function SidebarContents({ pathname, onNavigate, showLabels = false }: { pathnam
         <NavLink href="/notification" icon="bell" label="Notifications" active={on("/notification")} badge="3" onClick={onNavigate} showLabel={showLabels} />
         <NavLink href="/notification-preferences" icon="settings" label="Preferences" active={on("/notification-preferences")} onClick={onNavigate} showLabel={showLabels} />
       </nav>
-      <nav className="mt-6">
+      {user?.role === "admin" && <nav className="mt-6">
         <p className="mb-3.5 ml-2.5 hidden text-[10px] font-bold uppercase tracking-[0.07em] text-[#718083] sm:block">Staff</p>
         <NavLink href="/admin" icon="grid" label="Admin Dashboard" active={pathname === "/admin"} onClick={onNavigate} showLabel={showLabels} />
-        <NavLink href="/admin/construction" icon="shield" label="Manage Entries" active={on("/admin")} onClick={onNavigate} showLabel={showLabels} />
-      </nav>
+        <NavLink href="/admin/construction" icon="shield" label="Manage Entries" active={on("/admin/construction")} onClick={onNavigate} showLabel={showLabels} />
+      </nav>}
     </>
   );
 }
@@ -81,6 +84,7 @@ export function SidebarView({ pathname }: { pathname: string }) {
 
 export function MobileSidebar() {
   const pathname = usePathname();
+  const { user } = useUserSession();
   const [open, setOpen] = useState(false);
 
   return (
@@ -107,6 +111,10 @@ export function MobileSidebar() {
           <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation menu" className="grid size-8 place-items-center rounded bg-[#f0f4f6] text-[#526066]"><PortalIcon name="close" size={13} /></button>
         </div>
         <SidebarContents pathname={pathname} onNavigate={() => setOpen(false)} showLabels />
+        <div className="mt-auto pt-6">
+          <span className="mb-3 block text-sm font-semibold">{user?.name}</span>
+          <SignOutButton className="flex min-h-10 w-full items-center justify-center rounded bg-[#e8edf1] px-4 text-sm font-semibold text-[#25363d]" />
+        </div>
       </aside>
     </>
   );

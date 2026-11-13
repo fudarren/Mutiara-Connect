@@ -31,7 +31,7 @@ app/feedback/                  Community complaints and feedback centre
 app/notification/              Notification centre
 app/notification-preferences/  Notification preferences page
 app/admin/(dashboard)/         Staff overview, complaints, updates, and announcements
-app/admin/login/               Simulated staff sign-in page
+app/login/                     Shared public and administrator sign-in
 app/api/news/                  News Route Handler API endpoint
 components/                    Reusable UI, shell, navigation, feedback, and map components
 lib/                           Local construction, feedback, news, admin, and store helpers
@@ -57,7 +57,8 @@ public/                        Static icons, logos, and image assets
 | `/admin/complaints` | Review, update and assign complaints |
 | `/admin/updates` | Create, edit and remove construction updates |
 | `/admin/announcements` | Publish and review announcements |
-| `/admin/login` | Staff sign-in screen |
+| `/login` | Sign-in screen for both roles |
+| `/admin/login` | Redirect to the shared sign-in screen |
 | `/admin/construction` | Legacy staff construction management page |
 | `/api/news` | News API Route Handler |
 
@@ -84,7 +85,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - The header notification bell opens a popover containing all unread alerts.
 - Notification cards and alert actions link to their related construction detail
   pages.
-- The footer is shown on larger screens and hidden on mobile to preserve space.
+- The community footer includes the project logo and grouped links to existing
+  portal pages. It is hidden on mobile to preserve space. The admin portal uses
+  a compact matching footer that remains visible on mobile.
 
 Development access also supports `127.0.0.1` and `127.0.0.2`. These loopback
 hosts are explicitly allowed for Next.js dev resources, including hot reload;
@@ -100,8 +103,33 @@ npm run build
 
 ## Admin and management dashboard
 
-Open `/admin` directly; the current frontend does not require a login. The
-staff identity and records are samples, not verified Penang LRT information.
+All UI routes require sign-in. Signed-out visitors are sent to `/login`.
+Use either of the two default accounts:
+
+| Role | Username | Password | Landing page |
+| --- | --- | --- | --- |
+| Public user | `public` | `public2026` | `/` |
+| Administrator | `admin` | `admin2026` | `/admin` |
+
+The administrator can also open the community portal. Only this role sees
+the Staff navigation on desktop and mobile and can open `/admin` routes,
+including the legacy construction management page. A public user who enters
+an admin URL is sent to `/`. Sign-out is available in the public header,
+mobile menu, and admin sidebar.
+
+The session persists across refreshes in the current tab using sessionStorage.
+Only the username is stored. Identity and role are resolved from the hardcoded
+accounts, not from stored role fields. Old staff-only sessions are not used.
+Storage failures are shown explicitly on sign-in and sign-out.
+
+This is frontend-only role switching, not secure authentication. Credentials
+and mock data are in the client bundle and browser storage can be modified.
+Production requires server-side authentication and authorization. Route
+content waits for the browser session. The root layout opts out of instant
+navigation and `instantInsights.validationLevel` is `manual-warning` so
+child pages are not implicitly validated while hidden by this guard.
+Future server-authenticated pages can explicitly opt back in. Records are
+not verified Penang LRT information.
 
 The four admin pages use hardcoded mock data kept in browser localStorage.
 Changes persist across refreshes in that browser. To return to the original
@@ -121,13 +149,10 @@ For a walkthrough:
    the list. Refresh to check persistence.
 
 Publishing and assignment never send notifications or contact anyone. This
-standalone admin workspace does not change the behavior of the existing
-construction map, staff sign-in, or public notification modules; their data is
-separate.
-The existing construction module's staff sign-in is also simulated in the
-browser and does not provide real authentication. The login page no longer
-shows credentials, so use staff ID `STF-1001` with password `mutiara2026`
-(defined in `lib/staffSession.ts`).
+standalone admin workspace keeps its records separate from the existing
+construction map and public notification data.
+The existing construction module uses the same administrator session and
+does not require a second sign-in.
 
 ## Current status
 

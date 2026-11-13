@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClosureBadge, DraftBadge, ProgressBadge, WorkTypeBadge } from "@/components/construction/Badges";
 import { UpdateForm } from "@/components/construction/UpdateForm";
 import { closureStatus, formatDate, formatMYT } from "@/lib/construction";
 import { nextUpdateId, removeUpdate, saveUpdate, useConstructionUpdates } from "@/lib/constructionStore";
-import { signOut, useHydrated, useStaffSession } from "@/lib/staffSession";
+import { useHydrated, useStaffSession } from "@/lib/staffSession";
+import { SignOutButton } from "@/components/SignOutButton";
 import type { ConstructionUpdate } from "@/types";
 
 type Editing = null | "new" | string;
@@ -15,7 +15,6 @@ type Editing = null | "new" | string;
 const btn = "rounded px-2.5 py-1.5 text-[10px] font-semibold";
 
 export function ManageConstruction() {
-  const router = useRouter();
   const hydrated = useHydrated();
   const session = useStaffSession();
   const updates = useConstructionUpdates();
@@ -35,8 +34,8 @@ export function ManageConstruction() {
           <p className="mt-2 text-sm text-[#5d686c]">
             Only authorised staff can manage construction entries. Please log in to continue.
           </p>
-          <Link href="/admin/login" className="mt-4 inline-flex rounded bg-[#087b84] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#066a72]">
-            Go to staff log in
+          <Link href="/login" className="mt-4 inline-flex rounded bg-[#087b84] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#066a72]">
+            Go to sign in
           </Link>
         </div>
       </div>
@@ -82,13 +81,7 @@ export function ManageConstruction() {
           >
             + Add entry
           </button>
-          <button
-            type="button"
-            onClick={() => { signOut(); router.push("/admin/login"); }}
-            className="rounded bg-[#e8edf1] px-4 py-2.5 text-[12px] font-semibold text-[#25363d] hover:bg-[#d9e2e7]"
-          >
-            Sign out
-          </button>
+          <SignOutButton className="flex min-h-10 items-center justify-center rounded bg-[#e8edf1] px-4 py-2.5 text-[12px] font-semibold text-[#25363d]" />
         </div>
       </div>
 
