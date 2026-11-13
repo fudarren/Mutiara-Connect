@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { PortalIcon } from "@/components/PortalIcons";
 import { TelegramConnectCard } from "@/components/feedback/TelegramConnectCard";
@@ -16,6 +16,10 @@ import {
 import type { FeedbackCategory, FeedbackKind, FeedbackReport } from "@/types/feedback";
 import type { FeedbackStatus } from "@/types/feedback";
 import type { Point } from "geojson";
+import {
+  TELEGRAM_LINK_PREFERENCE_EVENT,
+  readTelegramLinkEnabled,
+} from "@/lib/notificationPreferences";
 
 const FeedbackLocationMap = dynamic(() => import("./FeedbackLocationMap"), {
   ssr: false,
@@ -98,6 +102,21 @@ export function FeedbackCenter() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [historyFilter, setHistoryFilter] = useState<FeedbackStatus | "All">("All");
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [telegramLinkEnabled, setTelegramLinkEnabled] = useState(true);
+
+  useEffect(() => {
+    const syncTelegramLinkPreference = () => {
+      setTelegramLinkEnabled(readTelegramLinkEnabled());
+    };
+
+    syncTelegramLinkPreference();
+    window.addEventListener("storage", syncTelegramLinkPreference);
+    window.addEventListener(TELEGRAM_LINK_PREFERENCE_EVENT, syncTelegramLinkPreference);
+    return () => {
+      window.removeEventListener("storage", syncTelegramLinkPreference);
+      window.removeEventListener(TELEGRAM_LINK_PREFERENCE_EVENT, syncTelegramLinkPreference);
+    };
+  }, []);
 
   const allReports = useMemo(
     () => historyFilter === "All" ? reports : reports.filter((report) => report.status === historyFilter),
@@ -165,9 +184,11 @@ export function FeedbackCenter() {
       )}
       {error && <div className={`${cardClass} mb-4 border-[#f1c3c5] bg-[#fff1f1] p-3 text-[12px] font-semibold text-[#a81920] sm:mb-5`} role="alert">{error}</div>}
 
-      <div className="mb-5">
-        <TelegramConnectCard />
-      </div>
+      {telegramLinkEnabled && (
+        <div className="mb-5">
+          <TelegramConnectCard />
+        </div>
+      )}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] xl:gap-5">
         <section className={`${cardClass} p-4 sm:p-5`}>

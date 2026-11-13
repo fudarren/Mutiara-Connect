@@ -1,28 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { PortalIcon } from "@/components/PortalIcons";
+import {
+  DEFAULT_TELEGRAM_LINK_ENABLED,
+  TELEGRAM_LINK_PREFERENCE_EVENT,
+  TELEGRAM_LINK_PREFERENCE_KEY,
+  readTelegramLinkEnabled,
+} from "@/lib/notificationPreferences";
 
 type Preferences = {
   urgentInApp: boolean;
   generalInApp: boolean;
-  urgentTelegram: boolean;
-  generalTelegram: boolean;
-  telegramConnected: boolean;
-  telegramUsername: string;
   quietHours: boolean;
 };
 
 const initialPreferences: Preferences = {
   urgentInApp: true,
   generalInApp: true,
-  urgentTelegram: true,
-  generalTelegram: false,
-  telegramConnected: true,
-  telegramUsername: "@sample_user",
   quietHours: true,
 };
+
+function subscribeToTelegramLinkPreference(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(TELEGRAM_LINK_PREFERENCE_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(TELEGRAM_LINK_PREFERENCE_EVENT, onChange);
+  };
+}
 
 function Toggle({
   checked,
@@ -50,13 +56,13 @@ function Toggle({
 }
 
 export function NotificationPreferences() {
-  const pathname = usePathname();
   const [preferences, setPreferences] = useState(initialPreferences);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  useEffect(() => {
-    setShowSuccess(false);
-  }, [pathname]);
+  const telegramLinkEnabled = useSyncExternalStore(
+    subscribeToTelegramLinkPreference,
+    readTelegramLinkEnabled,
+    () => DEFAULT_TELEGRAM_LINK_ENABLED,
+  );
 
   useEffect(() => {
     if (!showSuccess) return;
@@ -78,9 +84,24 @@ export function NotificationPreferences() {
     setPreferences((current) => ({ ...current, [key]: !current[key] }));
   };
 
-  const reset = () => setPreferences(initialPreferences);
-  const connectTelegram = () => {
-    setPreferences((current) => ({ ...current, telegramConnected: true }));
+  const toggleTelegramLink = () => {
+    window.localStorage.setItem(
+      TELEGRAM_LINK_PREFERENCE_KEY,
+      String(!telegramLinkEnabled),
+    );
+    window.dispatchEvent(new Event(TELEGRAM_LINK_PREFERENCE_EVENT));
+  };
+
+  const reset = () => {
+    setPreferences(initialPreferences);
+    window.localStorage.setItem(
+      TELEGRAM_LINK_PREFERENCE_KEY,
+      String(DEFAULT_TELEGRAM_LINK_ENABLED),
+    );
+    window.dispatchEvent(new Event(TELEGRAM_LINK_PREFERENCE_EVENT));
+  };
+  const savePreferences = () => {
+    setShowSuccess(true);
   };
 
   return (
@@ -171,60 +192,22 @@ export function NotificationPreferences() {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-[16px] font-bold">
-                    Telegram Notifications{" "}
-                    {preferences.telegramConnected && (
-                      <small className="text-[11px] font-normal text-[#79868b]">
-                        {preferences.telegramUsername}
-                      </small>
-                    )}
-                  </h2>
-                  {preferences.telegramConnected ? (
-                    <>
-                      <span className="ml-auto inline-flex h-5 items-center justify-center rounded-full bg-[#d9eaff] px-2.5 text-[10px] font-bold leading-none text-[#356ea9]">
-                        Connected
-                      </span>
-                      <span
-                        className="text-[#6a8799]"
-                        aria-label="Telegram connection active"
-                      >
-                        <PortalIcon name="link" size={11} />
-                      </span>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={connectTelegram}
-                      className="ml-auto cursor-pointer rounded-full bg-[#d9eaff] px-3 py-1.5 text-[10px] font-bold leading-none text-[#356ea9] hover:bg-[#c5ddf5]"
-                    >
-                      Connect Telegram
-                    </button>
-                  )}
+                  <h2 className="text-[16px] font-bold">Telegram Link</h2>
                 </div>
                 <p className="text-[12px] text-[#46616b]">
-                  Direct push messages via bot
+                  Show the Telegram reporting link on the report issue page
                 </p>
               </div>
             </div>
-            <div className="mt-7 space-y-5">
+            <div className="mt-7">
               <PreferenceRow
-                title="Urgent Alerts via Telegram"
-                description="Direct alerts for safety & road closures"
+                title="Enable Telegram link"
+                description="Let users connect through Telegram when reporting an issue"
               >
                 <Toggle
-                  checked={preferences.urgentTelegram}
-                  label="Urgent Telegram alerts"
-                  onChange={() => toggle("urgentTelegram")}
-                />
-              </PreferenceRow>
-              <PreferenceRow
-                title="General Updates via Telegram"
-                description="Milestones and community notices"
-              >
-                <Toggle
-                  checked={preferences.generalTelegram}
-                  label="General Telegram updates"
-                  onChange={() => toggle("generalTelegram")}
+                  checked={telegramLinkEnabled}
+                  label="Enable Telegram link"
+                  onChange={toggleTelegramLink}
                 />
               </PreferenceRow>
             </div>
@@ -262,7 +245,7 @@ export function NotificationPreferences() {
               </button>
               <button
                 type="button"
-                onClick={() => setShowSuccess(true)}
+                onClick={savePreferences}
                 className="flex cursor-pointer items-center gap-1.5 rounded bg-[#006c75] px-4 py-2 text-[12px] font-semibold text-white shadow-sm hover:bg-[#005d65]"
               >
                 Save Preferences
