@@ -62,16 +62,24 @@ function subscribe(onChange: () => void) {
   const onStorage = (event: StorageEvent) => {
     if (event.storageArea === window.sessionStorage && (event.key === KEY || event.key === null)) onChange();
   };
+  // Keep the first client render identical to the server snapshot. The
+  // browser-only session is loaded once the subscription is established,
+  // after hydration has completed.
+  const previousSnapshot = snapshot;
+  const nextSnapshot = read();
   window.addEventListener(EVENT, onChange);
   window.addEventListener("storage", onStorage);
+  if (nextSnapshot !== previousSnapshot) onChange();
   return () => {
     window.removeEventListener(EVENT, onChange);
     window.removeEventListener("storage", onStorage);
   };
 }
 
+const getSnapshot = () => snapshot;
+
 export function useUserSession() {
-  return useSyncExternalStore(subscribe, read, () => serverSnapshot);
+  return useSyncExternalStore(subscribe, getSnapshot, () => serverSnapshot);
 }
 
 export function useHydrated() {
