@@ -22,8 +22,8 @@ export default function HomePage() {
         <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#087b84]">
           Penang LRT Mutiara Line
         </div>
-        <h1 className="mt-1 text-[31px] leading-[38px] tracking-[-0.04em]">Mutiara Connect community hub</h1>
-        <p className="mt-1 max-w-2xl text-[15px] leading-[22px] text-[#5d686c]">
+        <h1 className="mt-1 max-w-[20ch] text-[clamp(26px,7vw,31px)] leading-[1.15] tracking-[-0.03em] sm:max-w-none sm:text-[31px] sm:leading-[38px] sm:tracking-[-0.04em]">Mutiara Connect community hub</h1>
+        <p className="mt-2 max-w-2xl text-[14px] leading-[21px] text-[#5d686c] sm:mt-1 sm:text-[15px] sm:leading-[22px]">
           Construction information, notifications and feedback for residents, commuters and businesses near the Mutiara
           Line.
         </p>

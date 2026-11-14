@@ -14,7 +14,7 @@ function PublicPortalShell({ children }: { children: React.ReactNode }) {
       <Suspense fallback={null}>
         <MobileSidebar />
       </Suspense>
-      <div className="mt-[54px] flex min-h-[calc(100vh-123px)] flex-1">
+      <div className="flex min-h-[calc(100vh-123px)] flex-1 sm:mt-[54px]">
         <Suspense fallback={<SidebarView pathname="" />}>
           <Sidebar />
         </Suspense>
