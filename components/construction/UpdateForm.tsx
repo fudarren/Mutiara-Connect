@@ -5,7 +5,7 @@ import type { Position } from "geojson";
 import { AreaPickerLoader } from "@/components/construction/AreaPickerLoader";
 import type { PickerMode } from "@/components/construction/AreaPicker";
 import type { MapBounds } from "@/components/construction/ConstructionMap";
-import { PROTOTYPE_TODAY, stations, workTypes } from "@/lib/construction";
+import { CONSTRUCTION_AS_OF, stations, workTypes } from "@/lib/construction";
 import type { ConstructionUpdate, ImpactLevel, NewsStatus, WorkType } from "@/types";
 
 type Props = {
@@ -21,7 +21,7 @@ const input = "h-[34px] w-full rounded border border-[#d5dfe4] bg-white px-2.5 t
 const textarea = "w-full rounded border border-[#d5dfe4] bg-white px-2.5 py-2 text-[13px] font-normal leading-5 text-[#181c1e]";
 const errorText = "text-[11px] font-semibold text-[#a81920]";
 
-const impacts: ImpactLevel[] = ["Low", "Moderate", "High"];
+const impacts: ImpactLevel[] = ["Low", "Moderate", "High", "Not specified"];
 const progress: NewsStatus[] = ["Planning", "Under construction", "Completed"];
 
 function ringToPoints(update?: ConstructionUpdate): Position[] {
@@ -48,8 +48,8 @@ export function UpdateForm({ initial, newId, onSave, onCancel }: Props) {
   const [status, setStatus] = useState<NewsStatus>(initial?.status ?? "Planning");
   const [impactLevel, setImpactLevel] = useState<ImpactLevel>(initial?.impactLevel ?? "Moderate");
   const [roads, setRoads] = useState(initial?.affectedRoads.join(", ") ?? "");
-  const [startDate, setStartDate] = useState(initial?.startDate ?? PROTOTYPE_TODAY);
-  const [endDate, setEndDate] = useState(initial?.endDate ?? PROTOTYPE_TODAY);
+  const [startDate, setStartDate] = useState(initial?.startDate ?? CONSTRUCTION_AS_OF);
+  const [endDate, setEndDate] = useState(initial?.endDate ?? CONSTRUCTION_AS_OF);
   const [workingHours, setWorkingHours] = useState(initial?.workingHours ?? "");
   const [businessAccessInfo, setBusinessAccessInfo] = useState(initial?.businessAccessInfo ?? "");
   const [pedestrianAccessInfo, setPedestrianAccessInfo] = useState(initial?.pedestrianAccessInfo ?? "");
@@ -134,6 +134,9 @@ export function UpdateForm({ initial, newId, onSave, onCancel }: Props) {
       isUrgent,
       isPublished,
       lastUpdated: nowMYT(),
+      source: initial?.source ? { ...initial.source, locallyEdited: true } : undefined,
+      geometryAccuracy: initial?.geometryAccuracy,
+      trafficRestriction: initial?.workType === workType ? initial.trafficRestriction : undefined,
     });
   }
 

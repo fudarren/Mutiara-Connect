@@ -12,7 +12,7 @@ import {
   centroidOf,
   closureStatus,
   formatDate,
-  fullAlignment,
+  alignmentSegments,
   stations,
   workTypeStyle,
   zones,
@@ -37,8 +37,8 @@ export type ConstructionMapProps = {
   className?: string;
 };
 
-/** Penang Island framing used by default. */
-export const PENANG_BOUNDS: MapBounds = [[5.285, 100.262], [5.43, 100.378]];
+/** Frame the island route, southern extension and mainland connection. */
+export const PENANG_BOUNDS: MapBounds = [[5.24, 100.25], [5.43, 100.38]];
 
 export const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 export const TILE_ATTRIBUTION =
@@ -76,6 +76,11 @@ function popupNode(u: ConstructionUpdate, link: boolean, navigate: (href: string
   line(`${u.workType}, ${u.status}`);
   line(`Road status: ${closureStatus(u)}`, "font-semibold");
   line(`${formatDate(u.startDate)} - ${formatDate(u.endDate)}`);
+  line(u.workingHours);
+  if (u.geometryAccuracy === "approximate") line("Approximate locality; see the official traffic plan.");
+  if (u.source) {
+    line(`Source reviewed ${formatDate(u.source.reviewedOn)}; restrictions apply during stated hours.`);
+  }
   if (link) {
     const a = document.createElement("a");
     a.href = `/projects/${u.updateId}`;
@@ -157,12 +162,14 @@ export default function ConstructionMap({
     }
 
     if (showAlignment) {
-      L.polyline(fullAlignment.map(ll), { color: ALIGNMENT_COLOR, weight: 5, opacity: 0.85 }).addTo(group);
+      for (const segment of alignmentSegments) {
+        L.polyline(segment.coordinates.map(ll), { color: ALIGNMENT_COLOR, weight: 5, opacity: 0.85 }).addTo(group);
+      }
       for (const station of stations) {
         L.circleMarker(ll(station.location.coordinates), {
           radius: 7, color: ALIGNMENT_COLOR, weight: 3, fillColor: "#ffffff", fillOpacity: 1,
         })
-          .bindTooltip(station.name, { permanent: true, direction: "right", offset: [8, 0], className: "mc-station-label" })
+          .bindTooltip(`${station.name}${station.provisional ? " (provisional)" : ""}`, { permanent: true, direction: "right", offset: [8, 0], className: "mc-station-label" })
           .addTo(group);
       }
     }
