@@ -51,6 +51,8 @@ export type ConstructionUpdate = {
   endDate: string;
   workingHours: string;
   impactLevel: ImpactLevel;
+  /** Set when the impact level is the team's own estimate rather than stated in a source notice. */
+  impactBasis?: "team-assessed";
   status: NewsStatus;
   isUrgent: boolean;
   isPublished: boolean;

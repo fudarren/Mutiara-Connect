@@ -130,7 +130,7 @@ export function ConstructionDetail({ updateId }: { updateId: string }) {
           <WorkTypeBadge type={update.workType} />
           <ClosureBadge status={status} />
           <ProgressBadge status={update.status} />
-          <ImpactBadge level={update.impactLevel} />
+          <ImpactBadge level={update.impactLevel} estimate={Boolean(update.impactBasis)} />
           {update.isUrgent && <UrgentBadge />}
           {!update.isPublished && <DraftBadge />}
         </div>
@@ -139,6 +139,11 @@ export function ConstructionDetail({ updateId }: { updateId: string }) {
           {update.affectedRoads.join(", ")}
           {zone ? `, ${zone.name}` : ""}
         </p>
+        {update.impactBasis && (
+          <p className="mt-1 text-[11px] text-[#7a8588]">
+            Impact level is our team&apos;s estimate from the notice&apos;s restrictions, hours and duration. The official notice does not state one.
+          </p>
+        )}
         <p className="mt-1 text-[11px] text-[#7a8588]">
           {update.source && !update.source.locallyEdited ? `Source reviewed ${formatDate(update.source.reviewedOn)}` : `Last updated ${formatMYT(update.lastUpdated)}`}, ID {update.updateId.toUpperCase()}
         </p>

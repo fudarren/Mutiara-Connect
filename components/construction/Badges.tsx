@@ -45,8 +45,13 @@ export function ClosureBadge({ status }: { status: ClosureStatus }) {
   return <span className={`${pill} ${closureClass[status]}`}>{status}</span>;
 }
 
-export function ImpactBadge({ level }: { level: ImpactLevel }) {
-  return <span className={`${pill} ${impactClass[level]}`}>{level === "Not specified" ? "Impact not specified" : `${level} impact`}</span>;
+export function ImpactBadge({ level, estimate = false }: { level: ImpactLevel; estimate?: boolean }) {
+  const label = level === "Not specified" ? "Impact not specified" : `${level} impact${estimate ? " (est.)" : ""}`;
+  return (
+    <span className={`${pill} ${impactClass[level]}`} title={estimate ? "Team estimate. The official notice does not state an impact level." : undefined}>
+      {label}
+    </span>
+  );
 }
 
 export function ProgressBadge({ status }: { status: NewsStatus }) {

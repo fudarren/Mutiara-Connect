@@ -45,7 +45,13 @@ export const zones: Zone[] = [
 
 /* ------------------------------ Seed updates ------------------------------- */
 
-export { constructionNotices as seedUpdates } from "./constructionNotices";
+import { constructionNotices } from "./constructionNotices";
+import { legacySeedUpdates } from "./legacyConstructionUpdates";
+
+/** CU-001 is restored from the original sample records. It is a staff-entered diversion, not an MRT Corp notice. */
+const restoredSamples = legacySeedUpdates.filter((u) => u.updateId === "cu-001");
+
+export const seedUpdates: ConstructionUpdate[] = [...constructionNotices, ...restoredSamples];
 
 /* --------------------------------- Helpers --------------------------------- */
 

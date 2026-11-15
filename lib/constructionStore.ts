@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { seedUpdates } from "@/lib/construction";
 import { legacySeedUpdates } from "@/lib/legacyConstructionUpdates";
-import { migrateConstructionUpdates } from "@/lib/constructionMigration";
+import { migrateConstructionUpdates, restoreMissingDefaults } from "@/lib/constructionMigration";
 import type { ConstructionUpdate } from "@/types";
 
 /*
@@ -11,7 +11,9 @@ import type { ConstructionUpdate } from "@/types";
  * staff pages read the same local records; there is no server synchronization.
  */
 
-const KEY = "mutiara-construction-updates-v2";
+// v3: one-time restore of default records (e.g. CU-001) that older v2 browser data was missing.
+const KEY = "mutiara-construction-updates-v3";
+const V2_KEY = "mutiara-construction-updates-v2";
 const LEGACY_KEY = "mutiara-construction-updates-v1";
 const EVENT = "mutiara-construction-change";
 
@@ -23,15 +25,18 @@ function read(): ConstructionUpdate[] {
   if (memoryOnly) return cachedList;
   try {
     const raw = window.localStorage.getItem(KEY);
-    const legacyRaw = raw === null ? window.localStorage.getItem(LEGACY_KEY) : null;
-    const cacheKey = raw === null ? `legacy:${legacyRaw}` : `current:${raw}`;
+    const v2Raw = raw === null ? window.localStorage.getItem(V2_KEY) : null;
+    const legacyRaw = raw === null && v2Raw === null ? window.localStorage.getItem(LEGACY_KEY) : null;
+    const cacheKey = raw !== null ? `current:${raw}` : v2Raw !== null ? `v2:${v2Raw}` : `legacy:${legacyRaw}`;
     if (cacheKey === cachedRaw) return cachedList;
-    const parsed: unknown = JSON.parse(raw ?? legacyRaw ?? "null");
+    const parsed: unknown = JSON.parse(raw ?? v2Raw ?? legacyRaw ?? "null");
     if (parsed !== null && !Array.isArray(parsed)) throw new Error("Invalid construction records");
     const list = parsed as ConstructionUpdate[] | null;
     cachedList = raw !== null
       ? (list ?? seedUpdates)
-      : list ? migrateConstructionUpdates(list, legacySeedUpdates, seedUpdates) : seedUpdates;
+      : v2Raw !== null && list
+        ? restoreMissingDefaults(list, seedUpdates)
+        : list ? migrateConstructionUpdates(list, legacySeedUpdates, seedUpdates) : seedUpdates;
     cachedRaw = cacheKey;
   } catch {
     cachedRaw = undefined;

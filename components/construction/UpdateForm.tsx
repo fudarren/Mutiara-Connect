@@ -136,6 +136,7 @@ export function UpdateForm({ initial, newId, onSave, onCancel }: Props) {
       lastUpdated: nowMYT(),
       source: initial?.source ? { ...initial.source, locallyEdited: true } : undefined,
       geometryAccuracy: initial?.geometryAccuracy,
+      impactBasis: initial && initial.impactLevel === impactLevel ? initial.impactBasis : undefined,
       trafficRestriction: initial?.workType === workType ? initial.trafficRestriction : undefined,
     });
   }

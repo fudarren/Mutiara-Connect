@@ -33,13 +33,14 @@ test("migration removes untouched fixtures without losing staff changes or reusi
   assert.deepEqual(migrateConstructionUpdates(migrated, legacySeedUpdates, constructionNotices), migrated);
 });
 
-test("sourced notices retain date/geometry limits without invented routes or impact ratings", () => {
+test("sourced notices retain date/geometry limits without invented routes, and flag the impact as a team estimate", () => {
   assert.equal(new Set(constructionNotices.map((u) => u.updateId)).size, constructionNotices.length);
   for (const u of constructionNotices) {
     assert.match(new URL(u.source.url).hostname, /(^|\.)mymrt\.com\.my$/);
     assert.equal(u.source.reviewedOn, CONSTRUCTION_AS_OF);
     assert.equal(u.geometryAccuracy, "approximate");
-    assert.equal(u.impactLevel, "Not specified");
+    assert.ok(["Low", "Moderate", "High"].includes(u.impactLevel));
+    assert.equal(u.impactBasis, "team-assessed");
     assert.equal(u.detourRoutes, null);
     assert.equal(u.pedestrianRoutes, null);
     assert.ok(u.startDate <= u.endDate);
