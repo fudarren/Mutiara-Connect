@@ -5,14 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { PortalIcon } from "./PortalIcons";
 import { useUserSession } from "@/lib/session";
 import { SignOutButton } from "./SignOutButton";
-
-const unreadNotifications = [
-  { type: "Urgent alert", title: "Temporary Road Diversion Near Station Area B", text: "A temporary diversion is in place around an active construction access point.", href: "/projects/cu-001" },
-  { type: "Update notification", title: "Construction Progress Update — Section A", text: "Latest summary of scheduled construction activities and site progress.", href: "/projects/cu-002" },
-  { type: "Update notification", title: "Station Area B Works Schedule Updated", text: "Revised work schedule information is available for nearby users.", href: "/projects/cu-005" },
-];
+import { useNotifications } from "@/lib/notificationStore";
 
 export function PortalHeader() {
+  const { notifications, unreadIds, markRead } = useNotifications();
+  const unreadNotifications = notifications.filter((notification) => unreadIds.has(notification.id)).slice(0, 3);
   const { user } = useUserSession();
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
@@ -58,19 +55,20 @@ export function PortalHeader() {
       </form>
       <div className="ml-auto flex items-center gap-5">
         <div ref={notificationMenuRef} className="fixed right-[66px] top-[11px] z-40 sm:relative sm:right-auto sm:top-auto sm:z-auto">
-          <button type="button" onClick={() => setShowNotifications((current) => !current)} className="group relative grid size-[31px] place-items-center rounded bg-[#f4f6f7] text-[#526066] hover:bg-[#087b84] hover:text-white" aria-label="Notifications (3 unread)" aria-expanded={showNotifications} aria-controls="notification-popover">
+          <button type="button" onClick={() => setShowNotifications((current) => !current)} className="group relative grid size-[31px] place-items-center rounded bg-[#f4f6f7] text-[#526066] hover:bg-[#087b84] hover:text-white" aria-label={`Notifications (${unreadIds.size} unread)`} aria-expanded={showNotifications} aria-controls="notification-popover">
             <PortalIcon name="bell" />
-            <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-[#c9222b] px-1 text-[10px] font-bold text-white">3</span>
+            <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-[#c9222b] px-1 text-[10px] font-bold text-white">{unreadIds.size}</span>
           </button>
           {showNotifications && (
             <div id="notification-popover" role="dialog" aria-label="Unread notifications" className="absolute right-0 top-full z-50 mt-2 w-[285px] rounded-md border border-[#e2e9ed] bg-white p-3 text-[#182126] shadow-[0_5px_18px_rgba(20,44,53,0.18)]">
               <div className="flex items-center justify-between border-b border-[#edf1f3] pb-2">
                 <strong className="text-[12px]">Unread notifications</strong>
-                <span className="rounded-full bg-[#ffd9d8] px-2 py-0.5 text-[10px] font-bold text-[#a81920]">3</span>
+                <span className="rounded-full bg-[#ffd9d8] px-2 py-0.5 text-[10px] font-bold text-[#a81920]">{unreadIds.size}</span>
               </div>
               <div className="mt-1 max-h-[260px] overflow-y-auto">
+                {unreadNotifications.length === 0 && <p className="p-2 text-[11px] text-[#5c686d]">No unread notifications.</p>}
                 {unreadNotifications.map((notification) => (
-                  <Link key={notification.href} href={notification.href} onClick={() => setShowNotifications(false)} className="block rounded p-2 hover:bg-[#fff1f1]">
+                  <Link key={notification.href} href={notification.href} onClick={() => { markRead(notification); setShowNotifications(false); }} className="block rounded p-2 hover:bg-[#fff1f1]">
                     <span className="block text-[9px] font-bold uppercase tracking-[0.04em] text-[#c9222b]">{notification.type}</span>
                     <strong className="mt-1 block text-[11px] leading-4">{notification.title}</strong>
                     <span className="mt-1 block text-[10px] leading-4 text-[#5c686d]">{notification.text}</span>

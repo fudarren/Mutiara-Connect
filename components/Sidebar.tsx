@@ -6,6 +6,7 @@ import { useState } from "react";
 import { PortalIcon } from "./PortalIcons";
 import { useUserSession } from "@/lib/session";
 import { SignOutButton } from "./SignOutButton";
+import { useNotifications } from "@/lib/notificationStore";
 
 const base =
   "group flex h-[38px] items-center justify-center gap-2.5 rounded-[3px] px-2.5 text-[13px] font-semibold sm:justify-start";
@@ -35,6 +36,7 @@ function NavLink({ href, icon, label, active: isActive, badge, onClick, showLabe
 }
 
 function SidebarContents({ pathname, onNavigate, showLabels = false }: { pathname: string; onNavigate?: () => void; showLabels?: boolean }) {
+  const { unreadIds } = useNotifications();
   const on = (prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
   const { user } = useUserSession();
 
@@ -49,7 +51,7 @@ function SidebarContents({ pathname, onNavigate, showLabels = false }: { pathnam
       </nav>
       <nav className="mt-6">
         <p className="mb-3.5 ml-2.5 hidden text-[10px] font-bold uppercase tracking-[0.07em] text-[#718083] sm:block">Communications</p>
-        <NavLink href="/notification" icon="bell" label="Notifications" active={on("/notification")} badge="3" onClick={onNavigate} showLabel={showLabels} />
+        <NavLink href="/notification" icon="bell" label="Notifications" active={on("/notification")} badge={String(unreadIds.size)} onClick={onNavigate} showLabel={showLabels} />
         <NavLink href="/notification-preferences" icon="settings" label="Preferences" active={on("/notification-preferences")} onClick={onNavigate} showLabel={showLabels} />
       </nav>
       {user?.role === "admin" && <nav className="mt-6">

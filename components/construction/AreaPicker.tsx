@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useRef } from "react";
 import type { Position } from "geojson";
-import { ALIGNMENT_COLOR, DETOUR_COLOR, PEDESTRIAN_COLOR, fullAlignment, stations } from "@/lib/construction";
+import { ALIGNMENT_COLOR, DETOUR_COLOR, PEDESTRIAN_COLOR, alignmentSegments, stations } from "@/lib/construction";
 import { PENANG_BOUNDS, TILE_ATTRIBUTION, TILE_URL, type MapBounds } from "@/components/construction/ConstructionMap";
 
 export type PickerMode = "area" | "detour" | "pedestrian";
@@ -63,10 +63,12 @@ export default function AreaPicker({ mode, area, detour, pedestrian, onAddPoint,
     const group = groupRef.current;
     if (!group) return;
 
-    L.polyline(fullAlignment.map(ll), { color: ALIGNMENT_COLOR, weight: 4, opacity: 0.5, interactive: false }).addTo(group);
+    for (const segment of alignmentSegments) {
+      L.polyline(segment.coordinates.map(ll), { color: ALIGNMENT_COLOR, weight: 4, opacity: 0.5, interactive: false }).addTo(group);
+    }
     for (const s of stations) {
       L.circleMarker(ll(s.location.coordinates), { radius: 5, color: ALIGNMENT_COLOR, weight: 2, fillColor: "#fff", fillOpacity: 1, interactive: false })
-        .bindTooltip(s.name, { permanent: true, direction: "right", offset: [6, 0], className: "mc-station-label" })
+        .bindTooltip(`${s.name}${s.provisional ? " (provisional)" : ""}`, { permanent: true, direction: "right", offset: [6, 0], className: "mc-station-label" })
         .addTo(group);
     }
 

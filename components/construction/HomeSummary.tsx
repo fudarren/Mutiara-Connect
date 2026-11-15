@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { ClosureBadge, WorkTypeBadge } from "@/components/construction/Badges";
-import { PROTOTYPE_NOW_LABEL, closureStatus, formatMYT } from "@/lib/construction";
+import { CONSTRUCTION_REVIEW_LABEL, closureStatus, formatMYT } from "@/lib/construction";
 import { useConstructionUpdates } from "@/lib/constructionStore";
 
 export function HomeSummary() {
@@ -12,7 +12,7 @@ export function HomeSummary() {
 
   const stats = useMemo(
     () => [
-      { label: "Road closures in effect", value: published.filter((u) => ["Closed", "Partially open"].includes(closureStatus(u))).length, tone: "text-[#a81920]" },
+      { label: "Published traffic restrictions", value: published.filter((u) => ["Closed", "Partially open", "Diversion"].includes(closureStatus(u))).length, tone: "text-[#a81920]" },
       { label: "Works under construction", value: published.filter((u) => u.status === "Under construction").length, tone: "text-[#7a5600]" },
       { label: "Closures scheduled", value: published.filter((u) => closureStatus(u) === "Scheduled").length, tone: "text-[#24558f]" },
       { label: "Urgent notices", value: published.filter((u) => u.isUrgent && u.status !== "Completed").length, tone: "text-[#a81920]" },
@@ -53,7 +53,7 @@ export function HomeSummary() {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[10px] text-[#7a8588]">Last updated {PROTOTYPE_NOW_LABEL}.</p>
+        <p className="mt-3 text-[10px] text-[#7a8588]">Sources reviewed {CONSTRUCTION_REVIEW_LABEL}.</p>
       </section>
     </>
   );

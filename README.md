@@ -101,6 +101,10 @@ npm run lint
 npm run build
 ```
 
+## References and AI use
+
+See [REFERENCES.md](./REFERENCES.md) for the technical sources used by the project, the status of the local demonstration data, and the disclosure of AI tools used during development.
+
 ## Admin and management dashboard
 
 All UI routes require sign-in. Signed-out visitors are sent to `/login`.
