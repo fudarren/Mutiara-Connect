@@ -302,16 +302,31 @@ export function NotificationCenter() {
         <div className="grid gap-2.5">
           {shownNotifications.length === 0 && <p role="status" className="py-6 text-center text-sm text-[#5d686c]">No notifications match your filters.</p>}
           {shownNotifications.map((notification) => {
+            const isUnread = unreadIds.has(notification.id);
             const toneClass =
-              notification.tone === "urgent"
+              !isUnread
+                ? "border-[#e8edf0] bg-[#f5f7f8]"
+                : notification.tone === "urgent"
                 ? "border-[#f9eded] bg-[#fff1f1]"
                 : notification.tone === "blue"
                   ? "border-[#dfebf7] bg-[#e7f2ff]"
                   : "border-[#e8edf0] bg-white";
             const actionClass =
-              notification.tone === "plain"
+              !isUnread || notification.tone === "plain"
                 ? "text-[#7a8588] hover:text-[#087b84]"
                 : "text-[#087b84]";
+            const badgeClass =
+              !isUnread
+                ? "bg-[#e1e6e8] text-[#6d777a]"
+                : notification.tone === "urgent"
+                  ? "bg-[#be1f25] text-white"
+                  : "bg-[#e1e6e8] text-[#4a5e66]";
+            const impactClass =
+              !isUnread
+                ? "text-[#7a8588]"
+                : notification.tone === "urgent"
+                  ? "text-[#bc232b]"
+                  : "text-[#6d777a]";
             return (
               <article
                 className={`group relative flex gap-3 rounded-md border p-[17px] shadow-[0_1px_2px_#e1e8eb] ${toneClass}`}
@@ -323,16 +338,21 @@ export function NotificationCenter() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2.5 text-[9px] text-[#697477]">
                     <span
-                      className={`px-2 py-1 text-[9px] font-bold ${notification.tone === "urgent" ? "bg-[#be1f25] text-white" : "bg-[#e1e6e8] text-[#4a5e66]"}`}
+                      className={`px-2 py-1 text-[9px] font-bold ${badgeClass}`}
                     >
                       &#9673;&nbsp;{notification.type}
+                    </span>
+                    <span
+                      className={`rounded px-1.5 py-1 text-[8px] font-bold uppercase tracking-[0.04em] ${isUnread ? "bg-[#ffd9d8] text-[#a81920]" : "bg-[#edf1f3] text-[#748084]"}`}
+                    >
+                      {isUnread ? "Unread" : "Read"}
                     </span>
                     <small className="hidden sm:inline">
                       ID: {notification.id} &nbsp;&bull;&nbsp;{" "}
                       {notification.date}
                     </small>
                     <strong
-                      className={`ml-auto text-[10px] font-medium ${notification.tone === "urgent" ? "text-[#bc232b]" : "text-[#6d777a]"}`}
+                      className={`ml-auto text-[10px] font-medium ${impactClass}`}
                     >
                       {notification.impact}
                     </strong>
