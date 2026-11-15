@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "telegram:bot": "node telegram-bot/bot.mjs"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
