@@ -49,6 +49,31 @@ function closureExplanation(u: ConstructionUpdate, status: ClosureStatus): strin
   }
 }
 
+/** The form saves "To be confirmed." for blank access notes, so treat that (and blanks) as not specified. */
+function isSpecified(text: string): boolean {
+  return !/^\s*(to be confirmed\.?|tbc\.?|to be announced\.?|n\/a|none|-)?\s*$/i.test(text);
+}
+
+function detourText(u: ConstructionUpdate, status: ClosureStatus): string {
+  const roads = u.affectedRoads.join(", ");
+  if (status === "Closed" || status === "Partially open") {
+    return `No separate detour route has been drawn for this work. Traffic is managed on site, so follow the marshals and posted signs along ${roads}, allow extra travel time and use nearby parallel roads where possible.`;
+  }
+  if (status === "Scheduled") {
+    return `No detour is in place yet. Detour details will be published here before the closure starts on ${formatDate(u.startDate)}.`;
+  }
+  if (u.status === "Completed") return "This work is completed, so no detour is needed.";
+  return `No detour is needed for this work. ${roads} stay open to traffic, but take extra care near the site.`;
+}
+
+function businessText(u: ConstructionUpdate): string {
+  return `Businesses along ${u.affectedRoads.join(", ")} stay open during the works. Customers can reach shops on foot using the marked walkways, and delivery vehicles should follow the posted signs. Ask the site marshals on duty if you need a special access arrangement.`;
+}
+
+function pedestrianText(u: ConstructionUpdate): string {
+  return `Footpaths near ${u.affectedRoads.join(", ")} stay open where it is safe. Please follow the marked walkways, hoarding signs and marshal instructions around the works, and take extra care when crossing near the site.`;
+}
+
 function Panel({ title, badge, children }: { title: string; badge?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="rounded-md border border-[#e7ecef] bg-white p-4 shadow-[0_1px_2px_#dfe7eb]">
@@ -193,15 +218,15 @@ export function ConstructionDetail({ updateId }: { updateId: string }) {
               A detour is available and shown as the green dashed line on the map. Affected roads:{" "}
               <b>{update.affectedRoads.join(", ")}</b>. Follow the posted detour signs.
             </>
-          ) : status === "Closed" || status === "Partially open" ? (
-            "No official detour has been published. Follow on-site signage and marshal instructions."
           ) : (
-            "No detour is needed for this work."
+            detourText(update, status)
           )}
         </Panel>
-        <Panel title="Business access">{update.businessAccessInfo}</Panel>
+        <Panel title="Business access">
+          {isSpecified(update.businessAccessInfo) ? update.businessAccessInfo : businessText(update)}
+        </Panel>
         <Panel title="Pedestrian accessibility">
-          {update.pedestrianAccessInfo}
+          {isSpecified(update.pedestrianAccessInfo) ? update.pedestrianAccessInfo : pedestrianText(update)}
           {hasPedRoute && <> The diverted walkway is shown as the blue dotted line on the map.</>}
         </Panel>
       </div>

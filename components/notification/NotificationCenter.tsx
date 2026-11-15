@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PortalIcon } from "@/components/PortalIcons";
+import { markAllRead, markRead, useUnreadIds } from "@/lib/notificationStore";
 
 type Notification = {
   type: string;
@@ -48,7 +49,7 @@ const notifications: Notification[] = [
     meta: "14 Nov 2026, 10:00 AM",
     extra: "Public Consultation",
     tone: "plain",
-    impact: "Read",
+    impact: "Low Impact",
   },
   {
     type: "URGENT ALERT (RESOLVED)",
@@ -59,7 +60,7 @@ const notifications: Notification[] = [
     meta: "Jalan Sultan Azlan Shah Access",
     extra: "Expired Duration",
     tone: "plain",
-    impact: "Read",
+    impact: "Resolved - No Impact",
   },
   {
     type: "UPDATE NOTIFICATION",
@@ -81,11 +82,10 @@ const notifications: Notification[] = [
     meta: "Bulletin Issue 43/2026",
     extra: "Key Metric: On Schedule (+1.2%)",
     tone: "plain",
-    impact: "Read",
+    impact: "Low Impact",
   },
 ];
 
-const unreadIds = new Set(["N-001", "N-002", "N-005"]);
 const notificationTypes = [
   "All",
   "Urgent alerts",
@@ -126,6 +126,8 @@ function getConstructionDetailsHref(notification: Notification) {
 }
 
 export function NotificationCenter() {
+  const unreadList = useUnreadIds();
+  const unreadIds = useMemo(() => new Set(unreadList), [unreadList]);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState<NotificationTypeFilter>("All");
@@ -169,7 +171,7 @@ export function NotificationCenter() {
           (filter === "Unread" && unreadIds.has(notification.id)) ||
           (filter === "Read" && !unreadIds.has(notification.id)),
       ),
-    [filter, matchingNotifications],
+    [filter, matchingNotifications, unreadIds],
   );
   const unreadCount = matchingNotifications.filter((notification) =>
     unreadIds.has(notification.id),
@@ -192,8 +194,8 @@ export function NotificationCenter() {
             </div>
             <h1 className="mt-1 flex items-center gap-2 text-[30px] leading-9 tracking-[-0.04em] font-bold">
               Notifications
-              <span className="inline-flex h-6 min-w-[72px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-[#ffd9d8] px-3 text-[12px] leading-6 text-[#a81920]">
-                <i className="size-1.5 rounded-full bg-[#c9222b]" />3 unread
+              <span className={`inline-flex h-6 min-w-[72px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-[12px] leading-6 ${unreadList.length > 0 ? "bg-[#ffd9d8] text-[#a81920]" : "bg-[#e8edf1] text-[#5e6b70]"}`}>
+                <i className={`size-1.5 rounded-full ${unreadList.length > 0 ? "bg-[#c9222b]" : "bg-[#9aa7ad]"}`} />{unreadList.length} unread
               </span>
             </h1>
             <p className="mt-1 text-[14px] leading-[21px] text-[#5d686c]">
@@ -203,7 +205,12 @@ export function NotificationCenter() {
               construction.
             </p>
           </div>
-          <button className="rounded bg-[#e8edf1] px-3 py-2 text-[11px] font-semibold text-[#25363d]">
+          <button
+            type="button"
+            onClick={markAllRead}
+            disabled={unreadList.length === 0}
+            className="rounded bg-[#e8edf1] px-3 py-2 text-[11px] font-semibold text-[#25363d] enabled:hover:bg-[#d9e2e7] disabled:cursor-default disabled:opacity-50"
+          >
             &#10003;&nbsp; Mark all as read
           </button>
         </div>
@@ -238,6 +245,7 @@ export function NotificationCenter() {
               </span>
               <Link
                 href={getConstructionDetailsHref(urgentNotification)}
+                onClick={() => markRead(urgentNotification.id)}
                 className="flex shrink-0 items-center gap-1 rounded-[3px] bg-[#be1f25] px-2.5 py-1.5 text-[9px] font-bold text-white shadow-sm"
               >
                 Details <PortalIcon name="arrow" size={12} />
@@ -267,6 +275,7 @@ export function NotificationCenter() {
           </div>
           <Link
             href={getConstructionDetailsHref(urgentNotification)}
+            onClick={() => markRead(urgentNotification.id)}
             className="hidden items-center gap-2 rounded bg-white px-3 py-2.5 font-bold text-[#b62027] sm:flex"
           >
             View details <PortalIcon name="arrow" size={17} />
@@ -393,14 +402,16 @@ export function NotificationCenter() {
 
         <div className="grid gap-2.5">
           {shownNotifications.map((notification) => {
-            const toneClass =
-              notification.tone === "urgent"
+            const isUnread = unreadIds.has(notification.id);
+            const toneClass = !isUnread
+              ? "border-[#e8edf0] bg-[#f7f9fa]"
+              : notification.tone === "urgent"
                 ? "border-[#f9eded] bg-[#fff1f1]"
                 : notification.tone === "blue"
                   ? "border-[#dfebf7] bg-[#e7f2ff]"
                   : "border-[#e8edf0] bg-white";
             const actionClass =
-              notification.tone === "plain"
+              !isUnread || notification.tone === "plain"
                 ? "text-[#7a8588] hover:text-[#087b84]"
                 : "text-[#087b84]";
             return (
@@ -409,12 +420,12 @@ export function NotificationCenter() {
                 key={notification.id}
               >
                 <div
-                  className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.tone === "urgent" ? "bg-[#c9222b]" : "bg-[#087b84]"}`}
+                  className={`mt-1.5 size-2 shrink-0 rounded-full ${!isUnread ? "bg-[#c5cfd3]" : notification.tone === "urgent" ? "bg-[#c9222b]" : "bg-[#087b84]"}`}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2.5 text-[9px] text-[#697477]">
                     <span
-                      className={`px-2 py-1 text-[9px] font-bold ${notification.tone === "urgent" ? "bg-[#be1f25] text-white" : "bg-[#e1e6e8] text-[#4a5e66]"}`}
+                      className={`px-2 py-1 text-[9px] font-bold ${isUnread && notification.tone === "urgent" ? "bg-[#be1f25] text-white" : "bg-[#e1e6e8] text-[#4a5e66]"}`}
                     >
                       &#9673;&nbsp;{notification.type}
                     </span>
@@ -423,12 +434,12 @@ export function NotificationCenter() {
                       {notification.date}
                     </small>
                     <strong
-                      className={`ml-auto text-[10px] font-medium ${notification.tone === "urgent" ? "text-[#bc232b]" : "text-[#6d777a]"}`}
+                      className={`ml-auto text-[10px] font-medium ${isUnread && notification.tone === "urgent" ? "text-[#bc232b]" : "text-[#6d777a]"}`}
                     >
                       {notification.impact}
                     </strong>
                   </div>
-                  <h2 className="my-1.5 text-base tracking-[-0.02em]">
+                  <h2 className={`my-1.5 text-base tracking-[-0.02em] ${isUnread ? "" : "text-[#4a5a60]"}`}>
                     {notification.title}
                   </h2>
                   <p className="text-xs leading-[18px] text-[#5c686d]">
@@ -445,6 +456,7 @@ export function NotificationCenter() {
                     </span>
                     <Link
                       href={getConstructionDetailsHref(notification)}
+                      onClick={() => markRead(notification.id)}
                       className={`ml-auto hidden items-center gap-2 rounded bg-white px-2.5 py-1.5 text-[10px] font-semibold shadow-[0_1px_3px_#d9e2e7] sm:flex ${actionClass}`}
                     >
                       View details <PortalIcon name="arrow" size={15} />
@@ -453,6 +465,7 @@ export function NotificationCenter() {
                 </div>
                 <Link
                   href={getConstructionDetailsHref(notification)}
+                  onClick={() => markRead(notification.id)}
                   aria-label={`Open ${notification.title}`}
                   className="absolute inset-0 z-10 sm:hidden"
                 />
