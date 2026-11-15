@@ -28,7 +28,8 @@ export type WorkType =
   | "Station Works"
   | "Utility Relocation";
 
-export type ImpactLevel = "Low" | "Moderate" | "High" | "Not specified";
+/** Every construction update must have an impact level; there is no "not specified" option. */
+export type ImpactLevel = "Low" | "Moderate" | "High";
 
 /** Derived from ConstructionUpdate.isClosureInEffect(). */
 export type ClosureStatus = "Closed" | "Partially open" | "Open" | "Scheduled" | "Diversion" | "Notice ended";
@@ -51,6 +52,8 @@ export type ConstructionUpdate = {
   endDate: string;
   workingHours: string;
   impactLevel: ImpactLevel;
+  /** Set when the impact level is the team's own estimate rather than stated in a source notice. */
+  impactBasis?: "team-assessed";
   status: NewsStatus;
   isUrgent: boolean;
   isPublished: boolean;

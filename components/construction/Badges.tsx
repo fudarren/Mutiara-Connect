@@ -14,7 +14,6 @@ const impactClass: Record<ImpactLevel, string> = {
   High: "bg-[#ffd9d8] text-[#a81920]",
   Moderate: "bg-[#ffe9cf] text-[#8a4f0b]",
   Low: "bg-[#e8edf1] text-[#4a5e66]",
-  "Not specified": "bg-[#e8edf1] text-[#4a5e66]",
 };
 
 const statusClass: Record<NewsStatus, string> = {
@@ -45,8 +44,13 @@ export function ClosureBadge({ status }: { status: ClosureStatus }) {
   return <span className={`${pill} ${closureClass[status]}`}>{status}</span>;
 }
 
-export function ImpactBadge({ level }: { level: ImpactLevel }) {
-  return <span className={`${pill} ${impactClass[level]}`}>{level === "Not specified" ? "Impact not specified" : `${level} impact`}</span>;
+export function ImpactBadge({ level, estimate = false }: { level: ImpactLevel; estimate?: boolean }) {
+  const label = `${level} impact${estimate ? " (est.)" : ""}`;
+  return (
+    <span className={`${pill} ${impactClass[level]}`} title={estimate ? "Team estimate. The official notice does not state an impact level." : undefined}>
+      {label}
+    </span>
+  );
 }
 
 export function ProgressBadge({ status }: { status: NewsStatus }) {

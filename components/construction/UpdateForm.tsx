@@ -21,7 +21,7 @@ const input = "h-[34px] w-full rounded border border-[#d5dfe4] bg-white px-2.5 t
 const textarea = "w-full rounded border border-[#d5dfe4] bg-white px-2.5 py-2 text-[13px] font-normal leading-5 text-[#181c1e]";
 const errorText = "text-[11px] font-semibold text-[#a81920]";
 
-const impacts: ImpactLevel[] = ["Low", "Moderate", "High", "Not specified"];
+const impacts: ImpactLevel[] = ["Low", "Moderate", "High"];
 const progress: NewsStatus[] = ["Planning", "Under construction", "Completed"];
 
 function ringToPoints(update?: ConstructionUpdate): Position[] {
@@ -136,6 +136,7 @@ export function UpdateForm({ initial, newId, onSave, onCancel }: Props) {
       lastUpdated: nowMYT(),
       source: initial?.source ? { ...initial.source, locallyEdited: true } : undefined,
       geometryAccuracy: initial?.geometryAccuracy,
+      impactBasis: initial && initial.impactLevel === impactLevel ? initial.impactBasis : undefined,
       trafficRestriction: initial?.workType === workType ? initial.trafficRestriction : undefined,
     });
   }

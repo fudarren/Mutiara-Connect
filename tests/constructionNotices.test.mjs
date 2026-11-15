@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { constructionNotices, publishedTrafficStatus, CONSTRUCTION_AS_OF } from "../lib/constructionNotices.ts";
 import { legacySeedUpdates } from "../lib/legacyConstructionUpdates.ts";
-import { migrateConstructionUpdates } from "../lib/constructionMigration.ts";
+import { ensureImpactSpecified, migrateConstructionUpdates } from "../lib/constructionMigration.ts";
 
 test("published traffic restrictions are independent of work type and do not imply reopening", () => {
   const utilities = constructionNotices.find((u) => u.workType === "Utility Relocation");
@@ -33,13 +33,14 @@ test("migration removes untouched fixtures without losing staff changes or reusi
   assert.deepEqual(migrateConstructionUpdates(migrated, legacySeedUpdates, constructionNotices), migrated);
 });
 
-test("sourced notices retain date/geometry limits without invented routes or impact ratings", () => {
+test("sourced notices retain date/geometry limits without invented routes, and flag the impact as a team estimate", () => {
   assert.equal(new Set(constructionNotices.map((u) => u.updateId)).size, constructionNotices.length);
   for (const u of constructionNotices) {
     assert.match(new URL(u.source.url).hostname, /(^|\.)mymrt\.com\.my$/);
     assert.equal(u.source.reviewedOn, CONSTRUCTION_AS_OF);
     assert.equal(u.geometryAccuracy, "approximate");
-    assert.equal(u.impactLevel, "Not specified");
+    assert.ok(["Low", "Moderate", "High"].includes(u.impactLevel));
+    assert.equal(u.impactBasis, "team-assessed");
     assert.equal(u.detourRoutes, null);
     assert.equal(u.pedestrianRoutes, null);
     assert.ok(u.startDate <= u.endDate);
@@ -47,4 +48,19 @@ test("sourced notices retain date/geometry limits without invented routes or imp
     assert.deepEqual(ring[0], ring.at(-1));
     for (const [lng, lat] of ring) assert.ok(lng > 100.2 && lng < 100.4 && lat > 5.2 && lat < 5.5);
   }
+});
+
+test("records saved with an unspecified impact are given a specified, team-assessed level", () => {
+  const notice = constructionNotices.find((u) => u.updateId === "mrt-ta01571");
+  const closure = { ...legacySeedUpdates[0], updateId: "cu-098", impactLevel: "Not specified" };
+  const sample = { ...legacySeedUpdates[2], updateId: "cu-097", workType: "Utility Relocation", impactLevel: "Not specified" };
+  const stored = [{ ...notice, impactLevel: "Not specified", impactBasis: undefined }, closure, sample, legacySeedUpdates[1]];
+  const fixed = ensureImpactSpecified(stored, constructionNotices);
+  assert.equal(fixed[0].impactLevel, notice.impactLevel);
+  assert.equal(fixed[1].impactLevel, "High");
+  assert.equal(fixed[2].impactLevel, "Low");
+  assert.equal(fixed[3], legacySeedUpdates[1]);
+  assert.ok(fixed.slice(0, 3).every((u) => u.impactBasis === "team-assessed"));
+  assert.ok(constructionNotices.every((u) => u.impactLevel !== "Not specified"));
+  assert.ok(legacySeedUpdates.every((u) => u.impactLevel !== "Not specified"));
 });

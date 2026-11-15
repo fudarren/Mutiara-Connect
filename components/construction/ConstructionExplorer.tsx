@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PortalIcon } from "@/components/PortalIcons";
 import { ClosureBadge, ImpactBadge, ProgressBadge, UrgentBadge, WorkTypeBadge } from "@/components/construction/Badges";
 import { ConstructionMapLoader } from "@/components/construction/ConstructionMapLoader";
@@ -45,7 +45,9 @@ function UpdateCard({
   const zone = zoneOf(update);
   return (
     <article
-      className={`rounded-md border bg-white p-3.5 shadow-[0_1px_2px_#e1e8eb] ${selected ? "border-[#087b84] ring-2 ring-[#087b84]/25" : "border-[#e7ecef]"}`}
+      data-update-id={update.updateId}
+      aria-current={selected ? "true" : undefined}
+      className={`rounded-md border p-3.5 transition-colors ${selected ? "border-[#087b84] bg-[#e3f4f5] shadow-[0_2px_8px_rgba(8,123,132,0.25)] ring-2 ring-[#087b84]/50" : "border-[#e7ecef] bg-white shadow-[0_1px_2px_#e1e8eb]"}`}
     >
       <div className="flex flex-wrap items-center gap-1.5">
         <WorkTypeBadge type={update.workType} />
@@ -71,7 +73,7 @@ function UpdateCard({
       )}
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <ProgressBadge status={update.status} />
-        <ImpactBadge level={update.impactLevel} />
+        <ImpactBadge level={update.impactLevel} estimate={Boolean(update.impactBasis)} />
         <span className="ml-auto flex gap-2">
           <button
             type="button"
@@ -141,6 +143,7 @@ export function ConstructionExplorer({
   const [view, setView] = useState<View>("map");
   const [selectedId, setSelectedId] = useState<string | null>(initialFocus || null);
   const [focusNonce, setFocusNonce] = useState(initialFocus ? 1 : 0);
+  const listRef = useRef<HTMLElement>(null);
   const [layers, setLayers] = useState({ alignment: true, zones: false, detours: true, pedestrian: true });
 
   const results = useMemo(
@@ -149,6 +152,14 @@ export function ConstructionExplorer({
   );
   const selected = results.find((u) => u.updateId === selectedId) ?? null;
   const filtersActive = keyword !== "" || workType !== "All" || status !== "All" || closure !== "All" || zoneId !== "All";
+
+  // When a pin is clicked, scroll the sidebar list so its card is in view (only when the list itself scrolls).
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || !selectedId || list.scrollHeight <= list.clientHeight) return;
+    const card = Array.from(list.querySelectorAll<HTMLElement>("[data-update-id]")).find((el) => el.dataset.updateId === selectedId);
+    if (card) list.scrollTo({ top: Math.max(card.offsetTop - 8, 0), behavior: "smooth" });
+  }, [selectedId, view, results.length]);
 
   function clearFilters() {
     setKeyword("");
@@ -337,28 +348,14 @@ export function ConstructionExplorer({
             <div className="rounded-md border border-[#e7ecef] bg-white px-3.5 py-3">
               <Legend />
             </div>
-          </div>
-          <aside aria-label="Selected construction update" className="grid content-start gap-2.5">
-            {selected ? (
+            {selected && (
               <section aria-label="Selected update" className="rounded-md border border-[#087b84] bg-[#f3fafa] p-3.5">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <WorkTypeBadge type={selected.workType} />
                   <ClosureBadge status={closureStatus(selected)} />
-                  {selected.isUrgent && <UrgentBadge />}
                 </div>
                 <h2 className="mt-2 text-[15px] font-bold">{selected.title}</h2>
-                <p className="mt-1 text-[11px] leading-4 text-[#5d686c]">
-                  {selected.affectedRoads.join(", ")}
-                  {zoneOf(selected) ? `, ${zoneOf(selected)!.name}` : ""}
-                </p>
-                <p className="mt-1 text-[11px] text-[#748084]">
-                  {formatDate(selected.startDate)} to {formatDate(selected.endDate)}, {selected.workingHours}
-                </p>
-                <p className="mt-2 text-xs leading-[18px] text-[#5c686d]">{selected.description}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <ProgressBadge status={selected.status} />
-                  <ImpactBadge level={selected.impactLevel} />
-                </div>
+                <p className="mt-1 text-xs leading-[18px] text-[#5c686d]">{selected.description}</p>
                 <div className="mt-3 flex gap-2">
                   <Link href={`/projects/${selected.updateId}`} className="flex items-center gap-1.5 rounded bg-[#087b84] px-3 py-2 text-[11px] font-semibold text-white hover:bg-[#066a72]">
                     View full details <PortalIcon name="arrow" size={14} />
@@ -368,11 +365,12 @@ export function ConstructionExplorer({
                   </button>
                 </div>
               </section>
-            ) : (
-              <div className="rounded-md border border-dashed border-[#cbd6dc] bg-white p-4 text-center text-xs leading-[18px] text-[#5d686c]" role="status">
-                Select a pin on the map to see its details here. Use the List view to browse all updates.
-              </div>
             )}
+          </div>
+          <aside ref={listRef} aria-label="Matching construction updates" className="relative grid max-h-[none] content-start gap-2.5 lg:max-h-[860px] lg:overflow-y-auto lg:p-1">
+            {results.map((u) => (
+              <UpdateCard key={u.updateId} update={u} selected={u.updateId === selectedId} onShowOnMap={showOnMap} />
+            ))}
           </aside>
         </div>
       )}
