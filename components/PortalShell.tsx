@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useHydrated, useUserSession } from "@/lib/session";
+import Link from "next/link";
+import { SIGN_IN_REQUIRED_PATHS, useHydrated, useUserSession } from "@/lib/session";
 import { PortalFooter } from "./PortalFooter";
 import { InformationBar, PortalHeader } from "./PortalHeader";
 import { Suspense, useEffect } from "react";
@@ -36,16 +37,32 @@ function ShellForPath({ children }: { children: React.ReactNode }) {
   const dashboardRoutes = ["/admin", "/admin/complaints", "/admin/updates", "/admin/announcements"];
   const loginRoute = pathname === "/login" || pathname === "/admin/login";
   const adminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
+  const signInRequired = SIGN_IN_REQUIRED_PATHS.includes(pathname);
 
   useEffect(() => {
-    if (!hydrated || loginRoute) return;
+    if (!hydrated || loginRoute || !adminRoute) return;
     if (!user) router.replace("/login");
-    else if (adminRoute && user.role !== "admin") router.replace("/");
+    else if (user.role !== "admin") router.replace("/");
   }, [hydrated, loginRoute, adminRoute, user, router]);
 
   if (loginRoute) return <>{children}</>;
-  if (!hydrated || !user || (adminRoute && user.role !== "admin")) {
+  if (!hydrated || (adminRoute && user?.role !== "admin")) {
     return <main className="flex min-h-screen items-center justify-center text-sm text-[#5d6974]" role="status">Opening your workspace...</main>;
+  }
+  if (!user && signInRequired) {
+    const feedback = pathname === "/feedback";
+    return (
+      <PublicPortalShell>
+        <section className="mx-auto w-full max-w-[700px] px-5 py-12 text-[#202b35]">
+          <h1 className="text-2xl font-bold">{feedback ? "Report an issue" : "Notification preferences"}</h1>
+          <p className="mt-3 text-sm leading-6 text-[#5d6974]">
+            {feedback ? "Sign in to submit a complaint or share feedback." : "Sign in to manage your notification preferences."}
+            {" "}You can still browse construction updates and news as a guest.
+          </p>
+          <Link href={`/login?next=${encodeURIComponent(pathname)}`} className="mt-6 inline-flex min-h-11 items-center justify-center rounded bg-[#1d3d67] px-5 text-sm font-semibold text-white hover:bg-[#173253]">Sign in to continue</Link>
+        </section>
+      </PublicPortalShell>
+    );
   }
   if (dashboardRoutes.includes(pathname)) return <>{children}</>;
   return <PublicPortalShell>{children}</PublicPortalShell>;
