@@ -46,6 +46,8 @@ const reports = [
 ];
 
 const sessions = new Map();
+const startedChatIds = new Set();
+const linkedChatIds = new Set();
 let nextUpdateOffset = 0;
 let running = true;
 
@@ -103,6 +105,13 @@ function setSession(chatId, session) {
 
 function clearSession(chatId) {
   sessions.delete(chatId);
+}
+
+function linkingPrompt(chatId) {
+  setSession(chatId, { type: "link" });
+  return sendMessage(chatId, "To continue, enter the linking code shown on the Mutiara Connect website.\n\nThis is a mock link, so any non-empty code will be accepted.", {
+    reply_markup: { remove_keyboard: true },
+  });
 }
 
 function reportReference() {
@@ -272,10 +281,30 @@ async function handleTextMessage(message) {
   const [command, ...argumentsList] = text.split(/\s+/);
   const normalizedCommand = command.toLowerCase().split("@")[0];
   if (normalizedCommand === "/start") {
+    startedChatIds.add(chatId);
+    if (!linkedChatIds.has(chatId)) return linkingPrompt(chatId);
     clearSession(chatId);
     return sendMessage(chatId, "Welcome to the Mutiara Connect mock reporting bot.\n\nUse /report to submit a complaint or feedback, or /track to check a report.", {
       reply_markup: mainKeyboard(),
     });
+  }
+  if (!startedChatIds.has(chatId)) {
+    return sendMessage(chatId, "Please press /start first to open the Mutiara Connect bot.");
+  }
+  const session = sessionFor(chatId);
+  if (!linkedChatIds.has(chatId)) {
+    if (session?.type === "link" && !normalizedCommand.startsWith("/")) {
+      linkedChatIds.add(chatId);
+      clearSession(chatId);
+      return sendMessage(chatId, "Link successful for this mock bot. You can now submit and track reports.", {
+        reply_markup: mainKeyboard(),
+      });
+    }
+    if (normalizedCommand === "/cancel") {
+      clearSession(chatId);
+      return sendMessage(chatId, "Linking cancelled. Send /start when you are ready to link this mock bot.");
+    }
+    return linkingPrompt(chatId);
   }
   if (normalizedCommand === "/help") {
     return sendMessage(chatId, "Available commands:\n\n/report - submit a complaint or feedback\n/track - track a report by reference number\n/myreports - view all reports you submitted here\n/cancel - cancel the current step\n/help - show this help message", {
@@ -290,7 +319,6 @@ async function handleTextMessage(message) {
   if (normalizedCommand === "/track") return startTracking(chatId, argumentsList.join(" "));
   if (normalizedCommand === "/myreports") return listMyReports(chatId);
 
-  const session = sessionFor(chatId);
   if (!session) return sendMessage(chatId, "Use /report, /track, or /help.", { reply_markup: mainKeyboard() });
   if (session.type === "track") return trackReport(chatId, text);
   if (session.type !== "report") return sendMessage(chatId, "Use /report or /track to begin.");
@@ -318,6 +346,9 @@ async function handleTextMessage(message) {
 async function handleUpdate(update) {
   if (update.callback_query) {
     await answerCallback(update.callback_query);
+    if (!linkedChatIds.has(update.callback_query.message.chat.id)) {
+      return linkingPrompt(update.callback_query.message.chat.id);
+    }
     if (update.callback_query.data.startsWith("report:")) return handleReportCallback(update.callback_query);
     return;
   }

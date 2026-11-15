@@ -20,6 +20,7 @@ Penang LRT development.
 - Tailwind CSS 4
 - ESLint
 - Leaflet for interactive construction maps
+- SweetAlert2 for submission, validation, and tracking feedback dialogs
 
 ## Project structure
 
@@ -36,6 +37,7 @@ app/api/news/                  News Route Handler API endpoint
 components/                    Reusable UI, shell, navigation, feedback, and map components
 lib/                           Local construction, feedback, news, admin, and store helpers
 styles/                        Global Tailwind and admin CSS entry points
+telegram-bot/bot.mjs           Standalone Telegram polling bot with mock reporting flows
 public/                        Static icons, logos, and image assets
 ```
 
@@ -51,7 +53,6 @@ public/                        Static icons, logos, and image assets
 | `/feedback` | Community complaints, feedback, status tracking, and report history |
 | `/notification` | Notification centre with search and filters |
 | `/notification-preferences` | In-app and Telegram notification settings |
-| `/feedback` | Submit complaints, feedback, and optional evidence |
 | `/about` | Portal information |
 | `/admin` | Admin and management dashboard overview |
 | `/admin/complaints` | Review, update and assign complaints |
@@ -78,6 +79,56 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Community feedback module
+
+The `/feedback` page is a frontend-only complaint and feedback prototype. It
+supports:
+
+- Complaint or feedback report types and categories.
+- Mock Penang locations with GeoJSON point coordinates and a Leaflet preview.
+- Required-field validation with inline messages and SweetAlert2 error dialogs.
+- Optional image evidence represented by its selected filename.
+- Mock reference numbers, status tracking, filters, and in-memory report history.
+- SweetAlert2 success confirmation after a report is submitted.
+
+Feedback reports are stored in React memory for the current page session and
+reset after a refresh. No production API, database, or file upload service is
+connected yet.
+
+## Telegram mock bot
+
+The project also includes a separate native Node.js polling bot under
+`telegram-bot/bot.mjs`. It is not connected to the website or a backend yet.
+The bot keeps mock reports in memory and supports:
+
+- `/start` with a mock linking-code step; any non-empty code is accepted.
+- `/report` for complaint or feedback submission.
+- Category and mock location selection, including a mock “near me” option.
+- Optional Telegram image upload or skipping the image.
+- `/track` to check a report reference number.
+- `/myreports` to list reports submitted by the current Telegram chat.
+- `/cancel` and `/help`.
+
+The bot token must remain local and must never be committed:
+
+PowerShell:
+
+```powershell
+$env:TELEGRAM_BOT_TOKEN = "YOUR_ROTATED_BOT_TOKEN"
+npm run telegram:bot
+```
+
+Command Prompt:
+
+```bat
+set TELEGRAM_BOT_TOKEN=YOUR_ROTATED_BOT_TOKEN
+npm run telegram:bot
+```
+
+The bot uses long polling and must be running in a terminal to respond. Its
+mock data resets when the process stops. Future backend integration can replace
+the mock linking, report storage, tracking, and Telegram notification logic.
+
 ## Responsive navigation and notifications
 
 - Desktop uses a fixed left navigation sidebar.
@@ -100,10 +151,6 @@ changing `allowedDevOrigins` in [next.config.ts](./next.config.ts).
 npm run lint
 npm run build
 ```
-
-## References and AI use
-
-See [REFERENCES.md](./REFERENCES.md) for the technical sources used by the project, the status of the local demonstration data, and the disclosure of AI tools used during development.
 
 ## Admin and management dashboard
 
@@ -178,6 +225,6 @@ reports include mock GeoJSON Point coordinates for selected areas, and future
 work can connect this area to a database, CMS, authentication, and verified
 public data sources.
 
-The feedback page also includes a frontend-only Telegram linking mock that
-generates a six-digit code; it does not contact Telegram until backend
-integration is implemented.
+The feedback page includes a separate frontend-only Telegram linking mock that
+generates a six-digit code for the future website integration. It does not
+contact the standalone Telegram bot or perform an account connection.

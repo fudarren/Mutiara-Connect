@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Swal from "sweetalert2";
 import { PortalIcon } from "@/components/PortalIcons";
 import { TelegramConnectCard } from "@/components/feedback/TelegramConnectCard";
 import {
@@ -30,6 +31,101 @@ const fieldClass = "box-border h-[40px] w-full min-w-0 shrink-0 rounded border b
 const labelClass = "grid gap-1 text-[11px] font-bold uppercase tracking-[0.04em] text-[#526269]";
 const cardClass = "rounded-md border border-[#e7ecef] bg-white shadow-[0_1px_2px_#dfe7eb]";
 const invalidFieldClass = "border-[#c9222b] focus:border-[#c9222b] focus:ring-[#c9222b]/15";
+
+type FeedbackSelectOption = { value: string; label: string };
+
+function FeedbackSelect({
+  value,
+  options,
+  placeholder,
+  onChange,
+  invalid = false,
+  "aria-describedby": ariaDescribedby,
+}: {
+  value: string;
+  options: FeedbackSelectOption[];
+  placeholder: string;
+  onChange: (value: string) => void;
+  invalid?: boolean;
+  "aria-describedby"?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listboxId = `feedback-select-${useId().replace(/:/g, "")}`;
+  const selectedIndex = options.findIndex((option) => option.value === value);
+  const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
+  }, []);
+
+  function chooseOption(option: FeedbackSelectOption) {
+    onChange(option.value);
+    setOpen(false);
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
+    if (event.key === "Escape") {
+      setOpen(false);
+      return;
+    }
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      setOpen(true);
+      setActiveIndex((current) => (current + direction + options.length) % options.length);
+      return;
+    }
+    if ((event.key === "Enter" || event.key === " ") && open) {
+      event.preventDefault();
+      chooseOption(options[activeIndex]);
+    }
+  }
+
+  return (
+    <div ref={rootRef} className={`mc-select ${open ? "mc-select--open" : ""}`}>
+      <button
+        type="button"
+        className={`${fieldClass} mc-select-trigger ${!selectedOption ? "mc-select--placeholder" : ""} ${invalid ? invalidFieldClass : ""}`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        aria-describedby={ariaDescribedby}
+        onClick={() => {
+          setOpen((current) => !current);
+          setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
+        }}
+        onKeyDown={handleKeyDown}
+      >
+        <span className="truncate">{selectedOption?.label ?? placeholder}</span>
+        <span className={`mc-select-chevron ${open ? "mc-select-chevron--open" : ""}`} aria-hidden="true" />
+      </button>
+      {open && (
+        <div id={listboxId} className="mc-select-menu" role="listbox" aria-label={placeholder}>
+          {options.map((option, index) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              key={option.value}
+              className={`mc-select-option ${index === activeIndex ? "mc-select-option--active" : ""} ${option.value === value ? "mc-select-option--selected" : ""}`}
+              onMouseEnter={() => setActiveIndex(index)}
+              onClick={() => chooseOption(option)}
+            >
+              <span>{option.label}</span>
+              {option.value === value && <PortalIcon name="check" size={16} />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function StatusBadge({ status }: { status: FeedbackReport["status"] }) {
   const tone = statusTone(status);
@@ -98,11 +194,11 @@ export function FeedbackCenter() {
   const [reference, setReference] = useState("");
   const [searchedReport, setSearchedReport] = useState<FeedbackReport | null>(null);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState<FeedbackReport | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [historyFilter, setHistoryFilter] = useState<FeedbackStatus | "All">("All");
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [telegramLinkEnabled, setTelegramLinkEnabled] = useState(true);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const syncTelegramLinkPreference = () => {
@@ -134,6 +230,13 @@ export function FeedbackCenter() {
     setFieldErrors(nextFieldErrors);
     if (Object.keys(nextFieldErrors).length > 0) {
       setError("Please fix the highlighted fields before submitting.");
+      void Swal.fire({
+        icon: "error",
+        title: "Missing information",
+        text: Object.values(nextFieldErrors)[0],
+        confirmButtonColor: "#087b84",
+        confirmButtonText: "Okay",
+      });
       return;
     }
     const selectedCoordinates = locationCoordinates;
@@ -149,7 +252,6 @@ export function FeedbackCenter() {
     });
     const nextReports = [report, ...reports];
     setReports(nextReports);
-    setSuccess(report);
     setError("");
     setFieldErrors({});
     setTitle("");
@@ -157,14 +259,45 @@ export function FeedbackCenter() {
     setLocation("");
     setLocationCoordinates(null);
     setPhotoName("");
+    if (photoInputRef.current) photoInputRef.current.value = "";
+    void Swal.fire({
+      icon: "success",
+      title: "Report submitted successfully",
+      html: `Your ${report.kind.toLowerCase()} has been recorded in this prototype.<br><strong>Reference number: ${report.referenceNumber}</strong>`,
+      confirmButtonColor: "#087b84",
+      confirmButtonText: "Continue",
+    });
   }
 
   function searchReference(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const match = reports.find((report) => report.referenceNumber.toLowerCase() === reference.trim().toLowerCase());
+    const trimmedReference = reference.trim();
+    if (!trimmedReference) {
+      setSearchedReport(null);
+      setError("Please enter a report reference number.");
+      void Swal.fire({
+        icon: "error",
+        title: "Reference number required",
+        text: "Enter a reference number to track your report.",
+        confirmButtonColor: "#087b84",
+        confirmButtonText: "Okay",
+      });
+      return;
+    }
+    const match = reports.find((report) => report.referenceNumber.toLowerCase() === trimmedReference.toLowerCase());
     setSearchedReport(match ?? null);
-    if (!match) setError("No report was found for that reference number.");
-    else setError("");
+    if (!match) {
+      setError("No report was found for that reference number.");
+      void Swal.fire({
+        icon: "error",
+        title: "Report not found",
+        text: "Check the reference number and try again.",
+        confirmButtonColor: "#087b84",
+        confirmButtonText: "Okay",
+      });
+    } else {
+      setError("");
+    }
   }
 
   return (
@@ -177,11 +310,6 @@ export function FeedbackCenter() {
         </p>
       </div>
 
-      {success && (
-        <div className={`${cardClass} mb-4 border-[#b8dfc2] bg-[#effaf1] p-3.5 text-[12px] text-[#24733b] sm:mb-5 sm:p-4`} role="status">
-          <b>Report submitted successfully.</b> Keep your reference number <strong>{success.referenceNumber}</strong> to track its status.
-        </div>
-      )}
       {error && <div className={`${cardClass} mb-4 border-[#f1c3c5] bg-[#fff1f1] p-3 text-[12px] font-semibold text-[#a81920] sm:mb-5`} role="alert">{error}</div>}
 
       {telegramLinkEnabled && (
@@ -204,8 +332,8 @@ export function FeedbackCenter() {
               </div>
             </fieldset>
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className={labelClass}><span>Category</span><select className={fieldClass} value={category} onChange={(event) => setCategory(event.target.value as FeedbackCategory)}>{feedbackCategories.map((value) => <option key={value}>{value}</option>)}</select><span className="h-[16px] text-[11px]">&nbsp;</span></label>
-              <label className={labelClass}><span>Report location <span className="text-[#c9222b]">*</span></span><select className={`${fieldClass} ${fieldErrors.location ? invalidFieldClass : ""}`} value={location} onChange={(event) => { const selected = reportLocations.find((item) => item.label === event.target.value); setLocation(selected?.label ?? ""); setLocationCoordinates(selected?.coordinates ?? null); setFieldErrors((current) => ({ ...current, location: "" })); }} aria-invalid={Boolean(fieldErrors.location)} aria-describedby="location-error" required><option value="">Select an area</option>{reportLocations.map((item) => <option key={item.label} value={item.label}>{item.label}</option>)}</select><span id="location-error" className={`h-[16px] text-[11px] font-semibold normal-case tracking-normal ${fieldErrors.location ? "text-[#c9222b]" : "invisible"}`} role="alert">{fieldErrors.location || "\u00a0"}</span></label>
+              <label className={labelClass}><span>Category</span><FeedbackSelect value={category} options={feedbackCategories.map((value) => ({ value, label: value }))} placeholder="Select a category" onChange={(value) => setCategory(value as FeedbackCategory)} /><span className="h-[16px] text-[11px]">&nbsp;</span></label>
+              <label className={labelClass}><span>Report location <span className="text-[#c9222b]">*</span></span><FeedbackSelect value={location} options={reportLocations.map((item) => ({ value: item.label, label: item.label }))} placeholder="Select an area" invalid={Boolean(fieldErrors.location)} aria-describedby="location-error" onChange={(value) => { const selected = reportLocations.find((item) => item.label === value); setLocation(selected?.label ?? ""); setLocationCoordinates(selected?.coordinates ?? null); setFieldErrors((current) => ({ ...current, location: "" })); }} /><span id="location-error" className={`h-[16px] text-[11px] font-semibold normal-case tracking-normal ${fieldErrors.location ? "text-[#c9222b]" : "invisible"}`} role="alert">{fieldErrors.location || "\u00a0"}</span></label>
             </div>
             <div className="grid gap-1">
               <div className="flex items-center justify-between gap-2">
@@ -216,7 +344,7 @@ export function FeedbackCenter() {
             </div>
             <label className={labelClass}><span>Short title <span className="text-[#c9222b]">*</span></span><input className={`${fieldClass} ${fieldErrors.title ? invalidFieldClass : ""}`} value={title} onChange={(event) => { setTitle(event.target.value); setFieldErrors((current) => ({ ...current, title: "" })); }} placeholder="e.g. Blocked pedestrian walkway" aria-invalid={Boolean(fieldErrors.title)} aria-describedby="title-error" required /><span id="title-error" className={`h-[16px] text-[11px] font-semibold normal-case tracking-normal ${fieldErrors.title ? "text-[#c9222b]" : "invisible"}`} role="alert">{fieldErrors.title || "\u00a0"}</span></label>
             <label className={labelClass}><span>Description <span className="text-[#c9222b]">*</span></span><textarea className={`box-border h-[120px] w-full min-w-0 shrink-0 resize-y rounded border border-[#d5dfe4] bg-white px-3 py-2 text-[13px] font-normal text-[#181c1e] outline-none transition focus:border-[#087b84] focus:ring-2 focus:ring-[#087b84]/15 ${fieldErrors.description ? invalidFieldClass : ""}`} value={description} onChange={(event) => { setDescription(event.target.value); setFieldErrors((current) => ({ ...current, description: "" })); }} placeholder="Include useful details such as timing, nearby landmarks, or what happened." aria-invalid={Boolean(fieldErrors.description)} aria-describedby="description-error" required /><span id="description-error" className={`h-[16px] text-[11px] font-semibold normal-case tracking-normal ${fieldErrors.description ? "text-[#c9222b]" : "invisible"}`} role="alert">{fieldErrors.description || "\u00a0"}</span></label>
-            <label className={labelClass}>Photo evidence <span className="font-normal normal-case tracking-normal text-[#7a8588]">(optional)</span><input className="min-h-[40px] rounded border border-dashed border-[#b8c8ce] bg-[#f7fafb] px-3 py-2 text-[12px] font-normal" type="file" accept="image/*" onChange={(event) => setPhotoName(event.target.files?.[0]?.name ?? "")} /><span className="font-normal normal-case tracking-normal text-[#7a8588]">Accepted for this frontend prototype: image filename only.</span></label>
+            <label className={labelClass}>Photo evidence <span className="font-normal normal-case tracking-normal text-[#7a8588]">(optional)</span><input ref={photoInputRef} className="min-h-[40px] rounded border border-dashed border-[#b8c8ce] bg-[#f7fafb] px-3 py-2 text-[12px] font-normal" type="file" accept="image/*" onChange={(event) => setPhotoName(event.target.files?.[0]?.name ?? "")} /><span className="font-normal normal-case tracking-normal text-[#7a8588]">Accepted for this frontend prototype: image filename only.</span></label>
             <button type="submit" className="min-h-[40px] rounded bg-[#087b84] px-4 text-[13px] font-bold text-white transition hover:bg-[#066a72]">Submit {kind.toLowerCase()}</button>
           </form>
         </section>
