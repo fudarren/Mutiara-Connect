@@ -6,11 +6,10 @@ Penang LRT development.
 
 ## Project goals
 
-- Make current construction updates easier for the community to follow.
-- Organize updates by project, location, status, and publication date.
-- Provide interactive construction maps, project details, and location-based
-  updates.
-- Give users responsive notification preferences and unread-alert navigation.
+- Provide construction updates through an interactive map.
+- Enable submission and tracking of public complaints.
+- Deliver timely notifications on construction updates and disruptions.
+- Support construction information and complaint management.
 
 ## Tech stack
 
@@ -20,7 +19,6 @@ Penang LRT development.
 - Tailwind CSS 4
 - ESLint
 - Leaflet for interactive construction maps
-- SweetAlert2 for submission, validation, and tracking feedback dialogs
 
 ## Project structure
 
