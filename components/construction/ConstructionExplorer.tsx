@@ -337,28 +337,14 @@ export function ConstructionExplorer({
             <div className="rounded-md border border-[#e7ecef] bg-white px-3.5 py-3">
               <Legend />
             </div>
-          </div>
-          <aside aria-label="Selected construction update" className="grid content-start gap-2.5">
-            {selected ? (
+            {selected && (
               <section aria-label="Selected update" className="rounded-md border border-[#087b84] bg-[#f3fafa] p-3.5">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <WorkTypeBadge type={selected.workType} />
                   <ClosureBadge status={closureStatus(selected)} />
-                  {selected.isUrgent && <UrgentBadge />}
                 </div>
                 <h2 className="mt-2 text-[15px] font-bold">{selected.title}</h2>
-                <p className="mt-1 text-[11px] leading-4 text-[#5d686c]">
-                  {selected.affectedRoads.join(", ")}
-                  {zoneOf(selected) ? `, ${zoneOf(selected)!.name}` : ""}
-                </p>
-                <p className="mt-1 text-[11px] text-[#748084]">
-                  {formatDate(selected.startDate)} to {formatDate(selected.endDate)}, {selected.workingHours}
-                </p>
-                <p className="mt-2 text-xs leading-[18px] text-[#5c686d]">{selected.description}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <ProgressBadge status={selected.status} />
-                  <ImpactBadge level={selected.impactLevel} />
-                </div>
+                <p className="mt-1 text-xs leading-[18px] text-[#5c686d]">{selected.description}</p>
                 <div className="mt-3 flex gap-2">
                   <Link href={`/projects/${selected.updateId}`} className="flex items-center gap-1.5 rounded bg-[#087b84] px-3 py-2 text-[11px] font-semibold text-white hover:bg-[#066a72]">
                     View full details <PortalIcon name="arrow" size={14} />
@@ -368,11 +354,12 @@ export function ConstructionExplorer({
                   </button>
                 </div>
               </section>
-            ) : (
-              <div className="rounded-md border border-dashed border-[#cbd6dc] bg-white p-4 text-center text-xs leading-[18px] text-[#5d686c]" role="status">
-                Select a pin on the map to see its details here. Use the List view to browse all updates.
-              </div>
             )}
+          </div>
+          <aside aria-label="Matching construction updates" className="grid max-h-[none] content-start gap-2.5 lg:max-h-[860px] lg:overflow-y-auto lg:pr-1">
+            {results.map((u) => (
+              <UpdateCard key={u.updateId} update={u} selected={u.updateId === selectedId} onShowOnMap={showOnMap} />
+            ))}
           </aside>
         </div>
       )}
