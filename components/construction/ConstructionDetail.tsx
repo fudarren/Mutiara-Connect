@@ -35,6 +35,10 @@ function boundsFor(u: ConstructionUpdate): MapBounds {
 
 function closureExplanation(u: ConstructionUpdate, status: ClosureStatus): string {
   const period = `${formatDate(u.startDate)} to ${formatDate(u.endDate)}`;
+  if (u.source) {
+    if (status === "Notice ended") return "The published notice period has ended. This does not confirm that the road has reopened or that construction is complete. Check the source for extensions.";
+    return `The notice describes ${status === "Diversion" ? "lane diversions" : "traffic restrictions"} from ${period}, ${u.workingHours}. This is a published schedule, not live lane availability. Source reviewed ${formatDate(u.source.reviewedOn)}${u.source.locallyEdited ? "; this record has local edits" : ""}.`;
+  }
   switch (status) {
     case "Closed":
       return `The road is closed to through traffic from ${period} (${u.workingHours}).`;
@@ -136,7 +140,7 @@ export function ConstructionDetail({ updateId }: { updateId: string }) {
           {zone ? `, ${zone.name}` : ""}
         </p>
         <p className="mt-1 text-[11px] text-[#7a8588]">
-          Last updated {formatMYT(update.lastUpdated)}, ID {update.updateId.toUpperCase()}
+          {update.source && !update.source.locallyEdited ? `Source reviewed ${formatDate(update.source.reviewedOn)}` : `Last updated ${formatMYT(update.lastUpdated)}`}, ID {update.updateId.toUpperCase()}
         </p>
       </header>
 
@@ -167,7 +171,7 @@ export function ConstructionDetail({ updateId }: { updateId: string }) {
                 Pedestrian diversion
               </span>
             )}
-            <span>Shaded area = affected area</span>
+            <span>{update.geometryAccuracy === "approximate" ? "Shaded area = approximate locality, not lane boundaries" : "Shaded area = affected area"}</span>
           </div>
         </div>
 
@@ -218,6 +222,8 @@ export function ConstructionDetail({ updateId }: { updateId: string }) {
               A detour is available and shown as the green dashed line on the map. Affected roads:{" "}
               <b>{update.affectedRoads.join(", ")}</b>. Follow the posted detour signs.
             </>
+          ) : update.source ? (
+            "No verified detour geometry is mapped here. Follow posted traffic plans and on-site directions for lane diversions."
           ) : (
             detourText(update, status)
           )}

@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PortalIcon } from "@/components/PortalIcons";
-import { activeUrgentAlertCount, notifications, type Notification } from "@/lib/notifications";
-import { markAllRead, markRead, useUnreadIds } from "@/lib/notificationStore";
+
+import { useNotifications } from "@/lib/notificationStore";
+import { CONSTRUCTION_AS_OF } from "@/lib/constructionNotices";
+import { matchesNotificationTime, type ConstructionNotification as Notification } from "@/lib/notifications";
 
 const notificationTypes = [
   "All",
@@ -15,10 +17,6 @@ const notificationTypes = [
 const timeRanges = ["All time", "Last 7 days", "Last 30 days"] as const;
 type NotificationTypeFilter = (typeof notificationTypes)[number];
 type TimeRange = (typeof timeRanges)[number];
-
-const notificationDate = (notification: Notification) =>
-  new Date(notification.date.replace(" MYT", " GMT+0800"));
-const filterReferenceDate = new Date("2026-11-12T23:59:59+08:00");
 
 function matchesType(
   notification: Notification,
@@ -32,22 +30,12 @@ function matchesType(
   return notification.type === "UPDATE NOTIFICATION";
 }
 
-function matchesTime(notification: Notification, selectedRange: TimeRange) {
-  if (selectedRange === "All time") return true;
-  const cutoff = new Date(filterReferenceDate);
-  cutoff.setDate(cutoff.getDate() - (selectedRange === "Last 7 days" ? 7 : 30));
-  return notificationDate(notification) >= cutoff;
-}
-
 function getConstructionDetailsHref(notification: Notification) {
-  return notification.type === "URGENT ALERT"
-    ? `/projects/${notification.id.replace(/^N-/, "cu-")}`
-    : `/projects/cu-${notification.id.slice(-3)}`;
+  return notification.href;
 }
 
 export function NotificationCenter() {
-  const unreadList = useUnreadIds();
-  const unreadIds = useMemo(() => new Set(unreadList), [unreadList]);
+  const { notifications, unreadIds, markRead, markAllRead } = useNotifications();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState<NotificationTypeFilter>("All");
@@ -77,11 +65,11 @@ export function NotificationCenter() {
     () =>
       notifications.filter(
         (notification) =>
-          notification.title.toLowerCase().includes(query.toLowerCase()) &&
+          [notification.title, notification.text, notification.meta, notification.extra].join(" ").toLowerCase().includes(query.trim().toLowerCase()) &&
           matchesType(notification, typeFilter) &&
-          matchesTime(notification, timeFilter),
+          matchesNotificationTime(notification, timeFilter, CONSTRUCTION_AS_OF),
       ),
-    [query, timeFilter, typeFilter],
+    [notifications, query, timeFilter, typeFilter],
   );
   const shownNotifications = useMemo(
     () =>
@@ -114,16 +102,9 @@ export function NotificationCenter() {
             </div>
             <h1 className="mt-1 flex items-center gap-2 text-[30px] leading-9 tracking-[-0.04em] font-bold">
               Notifications
-              <span className={`inline-flex h-6 min-w-[72px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-[12px] leading-6 ${unreadList.length > 0 ? "bg-[#ffd9d8] text-[#a81920]" : "bg-[#e8edf1] text-[#5e6b70]"}`}>
-                <i className={`size-1.5 rounded-full ${unreadList.length > 0 ? "bg-[#c9222b]" : "bg-[#9aa7ad]"}`} />{unreadList.length} unread
+              <span className="inline-flex h-6 min-w-[72px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-[#ffd9d8] px-3 text-[12px] leading-6 text-[#a81920]">
+                <i className="size-1.5 rounded-full bg-[#c9222b]" />{unreadIds.size} unread
               </span>
-              <button
-                type="button"
-                onClick={() => setTypeFilter("Urgent alerts")}
-                className="inline-flex h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-xl bg-[#be1f25] px-3 text-[12px] leading-6 text-white"
-              >
-                {activeUrgentAlertCount} urgent
-              </button>
             </h1>
             <p className="mt-1 text-[14px] leading-[21px] text-[#5d686c]">
               Stay updated on alerts, environmental advisories, and community
@@ -132,17 +113,12 @@ export function NotificationCenter() {
               construction.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={markAllRead}
-            disabled={unreadList.length === 0}
-            className="rounded bg-[#e8edf1] px-3 py-2 text-[11px] font-semibold text-[#25363d] enabled:hover:bg-[#d9e2e7] disabled:cursor-default disabled:opacity-50"
-          >
+          <button type="button" onClick={markAllRead} disabled={unreadIds.size === 0} className="rounded bg-[#e8edf1] px-3 py-2 text-[11px] font-semibold text-[#25363d]">
             &#10003;&nbsp; Mark all as read
           </button>
         </div>
 
-        <section className="rounded-md border border-[#e4eaed] border-l-4 border-l-[#dd1f23] bg-white p-3 text-[#182126] shadow-[0_2px_4px_#c1cdd2] sm:flex sm:min-h-[113px] sm:flex-nowrap sm:items-center sm:gap-3 sm:border-0 sm:bg-[#dd1f23] sm:p-4 sm:px-[18px] sm:text-white">
+        {urgentNotification && <section className="rounded-md border border-[#e4eaed] border-l-4 border-l-[#dd1f23] bg-white p-3 text-[#182126] shadow-[0_2px_4px_#c1cdd2] sm:flex sm:min-h-[113px] sm:flex-nowrap sm:items-center sm:gap-3 sm:border-0 sm:bg-[#dd1f23] sm:p-4 sm:px-[18px] sm:text-white">
           <div className="hidden group size-[34px] shrink-0 place-items-center border border-[#ff8888] sm:grid">
             <PortalIcon name="bell" light />
           </div>
@@ -156,7 +132,7 @@ export function NotificationCenter() {
                 {urgentNotification.type}
               </span>
               <span className="normal-case tracking-normal text-[#4e79b2]">
-                {urgentNotification.date.split(", ")[1]?.replace(" MYT", "")}
+                {urgentNotification.date}
               </span>
             </div>
             <h2 className="mt-2 text-[13px] font-bold leading-[17px]">
@@ -172,7 +148,7 @@ export function NotificationCenter() {
               </span>
               <Link
                 href={getConstructionDetailsHref(urgentNotification)}
-                onClick={() => markRead(urgentNotification.id)}
+                onClick={() => markRead(urgentNotification)}
                 className="flex shrink-0 items-center gap-1 rounded-[3px] bg-[#be1f25] px-2.5 py-1.5 text-[9px] font-bold text-white shadow-sm"
               >
                 Details <PortalIcon name="arrow" size={12} />
@@ -183,31 +159,27 @@ export function NotificationCenter() {
           <div className="hidden min-w-0 flex-1 sm:block">
             <div className="flex items-center gap-2.5 text-[10px]">
               <b className="bg-white px-2 py-1 text-[10px] text-[#be252b]">
-                URGENT ALERT
+                {urgentNotification.type}
               </b>
               <span>
-                6 Nov 2026, 8:30 AM MYT&nbsp; &bull; &nbsp;Station Area B
-                Construction Zone
+                {urgentNotification.date}&nbsp; &bull; &nbsp;{urgentNotification.meta}
               </span>
             </div>
             <h2 className="my-1.5 text-base">
-              Temporary Road Diversion Near Station Area B
+              {urgentNotification.title}
             </h2>
             <p className="text-xs leading-[18px]">
-              A temporary diversion is in place around an active construction
-              access point. Follow posted safety signage.
-              <br />
-              Heavy machinery crossing active 08:30&ndash;18:00 daily.
+              {urgentNotification.text}
             </p>
           </div>
           <Link
             href={getConstructionDetailsHref(urgentNotification)}
-            onClick={() => markRead(urgentNotification.id)}
+                onClick={() => markRead(urgentNotification)}
             className="hidden items-center gap-2 rounded bg-white px-3 py-2.5 font-bold text-[#b62027] sm:flex"
           >
             View details <PortalIcon name="arrow" size={17} />
           </Link>
-        </section>
+        </section>}
 
         <section className="my-4 rounded-md border-0 bg-transparent p-0 shadow-none sm:my-[30px] sm:rounded-md sm:border sm:border-[#e7ecef] sm:bg-white sm:p-3.5 sm:shadow-[0_1px_2px_#dfe7eb]">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
@@ -328,11 +300,13 @@ export function NotificationCenter() {
         </section>
 
         <div className="grid gap-2.5">
+          {shownNotifications.length === 0 && <p role="status" className="py-6 text-center text-sm text-[#5d686c]">No notifications match your filters.</p>}
           {shownNotifications.map((notification) => {
             const isUnread = unreadIds.has(notification.id);
-            const toneClass = !isUnread
-              ? "border-[#e8edf0] bg-[#f7f9fa]"
-              : notification.tone === "urgent"
+            const toneClass =
+              !isUnread
+                ? "border-[#e8edf0] bg-[#f5f7f8]"
+                : notification.tone === "urgent"
                 ? "border-[#f9eded] bg-[#fff1f1]"
                 : notification.tone === "blue"
                   ? "border-[#dfebf7] bg-[#e7f2ff]"
@@ -341,32 +315,49 @@ export function NotificationCenter() {
               !isUnread || notification.tone === "plain"
                 ? "text-[#7a8588] hover:text-[#087b84]"
                 : "text-[#087b84]";
+            const badgeClass =
+              !isUnread
+                ? "bg-[#e1e6e8] text-[#6d777a]"
+                : notification.tone === "urgent"
+                  ? "bg-[#be1f25] text-white"
+                  : "bg-[#e1e6e8] text-[#4a5e66]";
+            const impactClass =
+              !isUnread
+                ? "text-[#7a8588]"
+                : notification.tone === "urgent"
+                  ? "text-[#bc232b]"
+                  : "text-[#6d777a]";
             return (
               <article
                 className={`group relative flex gap-3 rounded-md border p-[17px] shadow-[0_1px_2px_#e1e8eb] ${toneClass}`}
                 key={notification.id}
               >
                 <div
-                  className={`mt-1.5 size-2 shrink-0 rounded-full ${!isUnread ? "bg-[#c5cfd3]" : notification.tone === "urgent" ? "bg-[#c9222b]" : "bg-[#087b84]"}`}
+                  className={`mt-1.5 size-2 shrink-0 rounded-full ${!unreadIds.has(notification.id) ? "bg-[#cbd4dc]" : notification.tone === "urgent" ? "bg-[#c9222b]" : "bg-[#087b84]"}`}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2.5 text-[9px] text-[#697477]">
                     <span
-                      className={`px-2 py-1 text-[9px] font-bold ${isUnread && notification.tone === "urgent" ? "bg-[#be1f25] text-white" : "bg-[#e1e6e8] text-[#4a5e66]"}`}
+                      className={`px-2 py-1 text-[9px] font-bold ${badgeClass}`}
                     >
                       &#9673;&nbsp;{notification.type}
+                    </span>
+                    <span
+                      className={`rounded px-1.5 py-1 text-[8px] font-bold uppercase tracking-[0.04em] ${isUnread ? "bg-[#ffd9d8] text-[#a81920]" : "bg-[#edf1f3] text-[#748084]"}`}
+                    >
+                      {isUnread ? "Unread" : "Read"}
                     </span>
                     <small className="hidden sm:inline">
                       ID: {notification.id} &nbsp;&bull;&nbsp;{" "}
                       {notification.date}
                     </small>
                     <strong
-                      className={`ml-auto text-[10px] font-medium ${isUnread && notification.tone === "urgent" ? "text-[#bc232b]" : "text-[#6d777a]"}`}
+                      className={`ml-auto text-[10px] font-medium ${impactClass}`}
                     >
                       {notification.impact}
                     </strong>
                   </div>
-                  <h2 className={`my-1.5 text-base tracking-[-0.02em] ${isUnread ? "" : "text-[#4a5a60]"}`}>
+                  <h2 className="my-1.5 text-base tracking-[-0.02em]">
                     {notification.title}
                   </h2>
                   <p className="text-xs leading-[18px] text-[#5c686d]">
@@ -383,7 +374,7 @@ export function NotificationCenter() {
                     </span>
                     <Link
                       href={getConstructionDetailsHref(notification)}
-                      onClick={() => markRead(notification.id)}
+                      onClick={() => markRead(notification)}
                       className={`ml-auto hidden items-center gap-2 rounded bg-white px-2.5 py-1.5 text-[10px] font-semibold shadow-[0_1px_3px_#d9e2e7] sm:flex ${actionClass}`}
                     >
                       View details <PortalIcon name="arrow" size={15} />
@@ -392,7 +383,7 @@ export function NotificationCenter() {
                 </div>
                 <Link
                   href={getConstructionDetailsHref(notification)}
-                  onClick={() => markRead(notification.id)}
+                      onClick={() => markRead(notification)}
                   aria-label={`Open ${notification.title}`}
                   className="absolute inset-0 z-10 sm:hidden"
                 />
@@ -404,12 +395,11 @@ export function NotificationCenter() {
         <div className="mt-[18px] flex min-h-[60px] items-center gap-2.5 rounded-md border border-[#e7ecef] bg-white px-3.5 py-2.5 text-[#5d696d]">
           <PortalIcon name="problem" size={16} />
           <p className="flex-1 text-xs leading-[15px]">
-            Click any notification item to inspect the full bulletin, safety
-            routing maps, and contractor
-            <br className="hidden sm:block" /> remarks.
+            Open a notification to view its construction details, dates and working hours.
+            <br className="hidden sm:block" /> Updates reviewed as of 15 Nov 2026 (MYT).
           </p>
           <small className="hidden font-mono text-[10px] text-[#7c878b] sm:block">
-            Showing 1 to {shownNotifications.length} of 6<br />
+            Showing {shownNotifications.length ? 1 : 0} to {shownNotifications.length} of {matchingNotifications.length}<br />
             entries
           </small>
           <button className="grid size-7 place-items-center rounded bg-[#f3f6f7] text-lg text-[#a2abad]">

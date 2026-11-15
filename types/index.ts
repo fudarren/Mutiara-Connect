@@ -28,10 +28,10 @@ export type WorkType =
   | "Station Works"
   | "Utility Relocation";
 
-export type ImpactLevel = "Low" | "Moderate" | "High";
+export type ImpactLevel = "Low" | "Moderate" | "High" | "Not specified";
 
 /** Derived from ConstructionUpdate.isClosureInEffect(). */
-export type ClosureStatus = "Closed" | "Partially open" | "Open" | "Scheduled";
+export type ClosureStatus = "Closed" | "Partially open" | "Open" | "Scheduled" | "Diversion" | "Notice ended";
 
 export type ConstructionUpdate = {
   updateId: string;
@@ -56,6 +56,17 @@ export type ConstructionUpdate = {
   isPublished: boolean;
   /** ISO timestamp with explicit +08:00 offset (Malaysia time). */
   lastUpdated: string;
+  /** Explicit traffic restriction, independent of the construction activity. */
+  trafficRestriction?: "partial" | "full" | "diversion";
+  geometryAccuracy?: "approximate";
+  source?: {
+    name: string;
+    url: string;
+    noticeId: string;
+    publishedOn?: string;
+    reviewedOn: string;
+    locallyEdited?: boolean;
+  };
 };
 
 export type Zone = {

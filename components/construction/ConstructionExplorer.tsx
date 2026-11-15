@@ -8,7 +8,7 @@ import { ConstructionMapLoader } from "@/components/construction/ConstructionMap
 import {
   DETOUR_COLOR,
   PEDESTRIAN_COLOR,
-  PROTOTYPE_NOW_LABEL,
+  CONSTRUCTION_REVIEW_LABEL,
   ALIGNMENT_COLOR,
   closureStatus,
   filterUpdates,
@@ -25,7 +25,7 @@ import type { ClosureStatus, ConstructionUpdate, NewsStatus, WorkType } from "@/
 type View = "map" | "list";
 
 const statuses: (NewsStatus | "All")[] = ["All", "Planning", "Under construction", "Completed"];
-const closures: (ClosureStatus | "All")[] = ["All", "Closed", "Partially open", "Open", "Scheduled"];
+const closures: (ClosureStatus | "All")[] = ["All", "Closed", "Partially open", "Open", "Scheduled", "Diversion", "Notice ended"];
 
 const selectClass =
   "h-[33px] w-full min-w-0 rounded bg-[#f0f4f7] px-2 text-[12px] text-[#181c1e]";
@@ -283,7 +283,7 @@ export function ConstructionExplorer({
           <span role="status">
             Showing {results.length} of {published.length} published updates
           </span>
-          <span>Times shown in Malaysia time (MYT). Last updated {PROTOTYPE_NOW_LABEL}.</span>
+          <span>Times shown in Malaysia time (MYT). Sources reviewed {CONSTRUCTION_REVIEW_LABEL}.</span>
         </div>
       </section>
 
@@ -378,8 +378,9 @@ export function ConstructionExplorer({
       )}
 
       <p className="mt-6 text-[10px] leading-4 text-[#7a8588]">
-        Sample information only. The alignment, stations and works shown are not official MRT Corp or Penang
-        government information.
+        Construction notices reviewed 15 Nov 2026, alongside any locally saved entries. Statuses reflect that date
+        and the published working hours, not live traffic. Shaded areas and route locations are approximate;
+        Follow posted traffic plans and on-site directions. Updates are not refreshed automatically.
       </p>
     </div>
   );

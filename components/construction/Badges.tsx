@@ -6,12 +6,15 @@ const closureClass: Record<ClosureStatus, string> = {
   "Partially open": "bg-[#ffe9cf] text-[#8a4f0b]",
   Open: "bg-[#dbeee6] text-[#176b61]",
   Scheduled: "bg-[#e1edfb] text-[#24558f]",
+  Diversion: "bg-[#ffe9cf] text-[#8a4f0b]",
+  "Notice ended": "bg-[#e8edf1] text-[#4a5e66]",
 };
 
 const impactClass: Record<ImpactLevel, string> = {
   High: "bg-[#ffd9d8] text-[#a81920]",
   Moderate: "bg-[#ffe9cf] text-[#8a4f0b]",
   Low: "bg-[#e8edf1] text-[#4a5e66]",
+  "Not specified": "bg-[#e8edf1] text-[#4a5e66]",
 };
 
 const statusClass: Record<NewsStatus, string> = {
@@ -43,7 +46,7 @@ export function ClosureBadge({ status }: { status: ClosureStatus }) {
 }
 
 export function ImpactBadge({ level }: { level: ImpactLevel }) {
-  return <span className={`${pill} ${impactClass[level]}`}>{level} impact</span>;
+  return <span className={`${pill} ${impactClass[level]}`}>{level === "Not specified" ? "Impact not specified" : `${level} impact`}</span>;
 }
 
 export function ProgressBadge({ status }: { status: NewsStatus }) {

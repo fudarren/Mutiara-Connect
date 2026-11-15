@@ -1,11 +1,11 @@
-/*
- * Sample notifications, shared by the Notifications page and the home
- * dashboard so the counts on both always agree.
- */
+import type { ConstructionUpdate } from "@/types";
 
-export type Notification = {
-  type: string;
+export type ConstructionNotification = {
   id: string;
+  href: string;
+  revision: string;
+  type: "URGENT ALERT" | "UPDATE NOTIFICATION" | "RESOLVED";
+  timestamp: string;
   date: string;
   title: string;
   text: string;
@@ -15,74 +15,38 @@ export type Notification = {
   impact: string;
 };
 
-export const notifications: Notification[] = [
-  {
-    type: "URGENT ALERT",
-    id: "N-001",
-    date: "6 Nov 2026, 8:30 AM MYT",
-    title: "Temporary Road Diversion Near Station Area B",
-    text: "A temporary diversion is in place around an active construction access point. Follow posted safety signage.",
-    meta: "George Town East Sector",
-    extra: "Traffic Impact: Moderate",
-    tone: "urgent",
-    impact: "High Impact",
-  },
-  {
-    type: "UPDATE NOTIFICATION",
-    id: "N-002",
-    date: "5 Nov 2026, 3:15 PM MYT",
-    title: "Construction Progress Update — Section A",
-    text: "Latest summary of scheduled construction activities and site progress. Piling operations completed on Viaduct Piers 12 to 18.",
-    meta: "Section A (Komtar – Jelutong)",
-    extra: "Civil Works: 64% Complete",
-    tone: "blue",
-    impact: "Works Milestone",
-  },
-  {
-    type: "UPDATE NOTIFICATION",
-    id: "N-003",
-    date: "4 Nov 2026, 10:00 AM MYT",
-    title: "Upcoming Community Information Session",
-    text: "Residents can review the session details and planned discussion topics. Hall briefing scheduled at Dewan MPKK Gelugor on Saturday.",
-    meta: "14 Nov 2026, 10:00 AM",
-    extra: "Public Consultation",
-    tone: "plain",
-    impact: "Low Impact",
-  },
-  {
-    type: "URGENT ALERT (RESOLVED)",
-    id: "N-004",
-    date: "3 Nov 2026, 4:45 PM MYT",
-    title: "Temporary Access Restriction Notice",
-    text: "Short-term access arrangements were announced for a worksite vicinity. Normal pedestrian corridor reopened 4 Nov 06:00 AM.",
-    meta: "Jalan Sultan Azlan Shah Access",
-    extra: "Expired Duration",
-    tone: "plain",
-    impact: "Resolved - No Impact",
-  },
-  {
-    type: "UPDATE NOTIFICATION",
-    id: "N-005",
-    date: "2 Nov 2026, 11:20 AM MYT",
-    title: "Station Area B Works Schedule Updated",
-    text: "Revised work schedule information is available for nearby users. Night works scheduled from 23:00 to 05:00 to reduce daytime congestion.",
-    meta: "Night Schedule Notice",
-    extra: "Low Acoustic Zone Protocol",
-    tone: "blue",
-    impact: "Timetable Adjustment",
-  },
-  {
-    type: "UPDATE NOTIFICATION",
-    id: "N-006",
-    date: "1 Nov 2026, 9:00 AM MYT",
-    title: "Weekly Construction Summary",
-    text: "A summary of project progress has been shared with the community. Review key milestone achievements for October Week 4.",
-    meta: "Bulletin Issue 43/2026",
-    extra: "Key Metric: On Schedule (+1.2%)",
-    tone: "plain",
-    impact: "Low Impact",
-  },
-];
+const dateFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Kuala_Lumpur", day: "numeric", month: "short", year: "numeric",
+});
 
-/** Urgent alerts that are still active (resolved ones have "(RESOLVED)" in their type). */
-export const activeUrgentAlertCount = notifications.filter((n) => n.type === "URGENT ALERT").length;
+/** One notification per published record, linking directly to its actual ID. */
+export function buildConstructionNotifications(updates: ConstructionUpdate[]): ConstructionNotification[] {
+  return updates.filter((update) => update.isPublished).map((update): ConstructionNotification => {
+    const resolved = update.status === "Completed";
+    const urgent = update.isUrgent && !resolved;
+    const issuedOn = !update.source?.locallyEdited ? update.source?.publishedOn : undefined;
+    const timestamp = issuedOn ? `${issuedOn}T00:00:00+08:00` : update.lastUpdated;
+    return {
+      id: update.updateId,
+      href: `/projects/${encodeURIComponent(update.updateId)}`,
+      revision: JSON.stringify(update),
+      type: resolved ? "RESOLVED" : urgent ? "URGENT ALERT" : "UPDATE NOTIFICATION",
+      timestamp,
+      date: `${issuedOn ? "Issued" : "Updated"} ${dateFormatter.format(new Date(timestamp))} MYT`,
+      title: update.title,
+      text: update.description,
+      meta: update.affectedRoads.join(", "),
+      extra: `${dateFormatter.format(new Date(`${update.startDate}T00:00:00+08:00`))} – ${dateFormatter.format(new Date(`${update.endDate}T00:00:00+08:00`))} · ${update.workingHours}`,
+      tone: resolved ? "plain" : urgent ? "urgent" : "blue",
+      impact: update.impactLevel === "Not specified" ? "Impact not specified" : `${update.impactLevel} impact`,
+    };
+  }).sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp) || a.id.localeCompare(b.id));
+}
+
+export function matchesNotificationTime(notification: ConstructionNotification, range: "All time" | "Last 7 days" | "Last 30 days", asOf: string): boolean {
+  if (range === "All time") return true;
+  const end = Date.parse(`${asOf}T23:59:59.999+08:00`);
+  const start = Date.parse(`${asOf}T00:00:00+08:00`) - ((range === "Last 7 days" ? 7 : 30) - 1) * 86_400_000;
+  const timestamp = Date.parse(notification.timestamp);
+  return timestamp >= start && timestamp <= end;
+}

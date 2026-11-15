@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { ClosureBadge, WorkTypeBadge } from "@/components/construction/Badges";
-import { PROTOTYPE_NOW_LABEL, closureStatus, formatMYT } from "@/lib/construction";
+import { CONSTRUCTION_REVIEW_LABEL, closureStatus, formatMYT } from "@/lib/construction";
 import { useConstructionUpdates } from "@/lib/constructionStore";
-import { activeUrgentAlertCount } from "@/lib/notifications";
 
 export function HomeSummary() {
   const all = useConstructionUpdates();
@@ -13,10 +12,10 @@ export function HomeSummary() {
 
   const stats = useMemo(
     () => [
-      { label: "Road closures in effect", value: published.filter((u) => ["Closed", "Partially open"].includes(closureStatus(u))).length, tone: "text-[#a81920]" },
+      { label: "Published traffic restrictions", value: published.filter((u) => ["Closed", "Partially open", "Diversion"].includes(closureStatus(u))).length, tone: "text-[#a81920]" },
       { label: "Works under construction", value: published.filter((u) => u.status === "Under construction").length, tone: "text-[#7a5600]" },
       { label: "Closures scheduled", value: published.filter((u) => closureStatus(u) === "Scheduled").length, tone: "text-[#24558f]" },
-      { label: "Urgent notices", value: activeUrgentAlertCount, tone: "text-[#a81920]", href: "/notification" },
+      { label: "Urgent notices", value: published.filter((u) => u.isUrgent && u.status !== "Completed").length, tone: "text-[#a81920]" },
     ],
     [published],
   );
@@ -29,20 +28,12 @@ export function HomeSummary() {
   return (
     <>
       <section aria-label="Construction summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {stats.map((s) => {
-          const card = "rounded-md border border-[#e7ecef] bg-white p-4 shadow-[0_1px_2px_#dfe7eb]";
-          const body = (
-            <>
-              <div className={`text-[30px] font-semibold leading-9 tracking-[-0.04em] ${s.tone}`}>{s.value}</div>
-              <div className="mt-1 text-[11px] text-[#5d686c]">{s.label}</div>
-            </>
-          );
-          return s.href ? (
-            <Link key={s.label} href={s.href} className={`${card} block hover:border-[#087b84]`}>{body}</Link>
-          ) : (
-            <div key={s.label} className={card}>{body}</div>
-          );
-        })}
+        {stats.map((s) => (
+          <div key={s.label} className="rounded-md border border-[#e7ecef] bg-white p-4 shadow-[0_1px_2px_#dfe7eb]">
+            <div className={`text-[30px] font-semibold leading-9 tracking-[-0.04em] ${s.tone}`}>{s.value}</div>
+            <div className="mt-1 text-[11px] text-[#5d686c]">{s.label}</div>
+          </div>
+        ))}
       </section>
 
       <section aria-label="Latest construction updates" className="mt-6 rounded-md border border-[#e7ecef] bg-white p-4 shadow-[0_1px_2px_#dfe7eb]">
@@ -62,7 +53,7 @@ export function HomeSummary() {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[10px] text-[#7a8588]">Last updated {PROTOTYPE_NOW_LABEL}.</p>
+        <p className="mt-3 text-[10px] text-[#7a8588]">Sources reviewed {CONSTRUCTION_REVIEW_LABEL}.</p>
       </section>
     </>
   );
