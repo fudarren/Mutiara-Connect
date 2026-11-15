@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { seedUpdates } from "@/lib/construction";
 import { legacySeedUpdates } from "@/lib/legacyConstructionUpdates";
-import { migrateConstructionUpdates, restoreMissingDefaults } from "@/lib/constructionMigration";
+import { ensureImpactSpecified, migrateConstructionUpdates, restoreMissingDefaults } from "@/lib/constructionMigration";
 import type { ConstructionUpdate } from "@/types";
 
 /*
@@ -32,11 +32,14 @@ function read(): ConstructionUpdate[] {
     const parsed: unknown = JSON.parse(raw ?? v2Raw ?? legacyRaw ?? "null");
     if (parsed !== null && !Array.isArray(parsed)) throw new Error("Invalid construction records");
     const list = parsed as ConstructionUpdate[] | null;
-    cachedList = raw !== null
-      ? (list ?? seedUpdates)
-      : v2Raw !== null && list
-        ? restoreMissingDefaults(list, seedUpdates)
-        : list ? migrateConstructionUpdates(list, legacySeedUpdates, seedUpdates) : seedUpdates;
+    cachedList = ensureImpactSpecified(
+      raw !== null
+        ? (list ?? seedUpdates)
+        : v2Raw !== null && list
+          ? restoreMissingDefaults(list, seedUpdates)
+          : list ? migrateConstructionUpdates(list, legacySeedUpdates, seedUpdates) : seedUpdates,
+      seedUpdates,
+    );
     cachedRaw = cacheKey;
   } catch {
     cachedRaw = undefined;
