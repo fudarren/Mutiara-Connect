@@ -80,8 +80,12 @@ export function PortalHeader() {
           )}
         </div>
         <div className="hidden items-center gap-2 text-right sm:flex">
-          <span><strong className="block text-xs">{user?.name}</strong><small className="block text-[9px] text-[#566166]">{user?.role === "admin" ? "Administrator" : "Public user"}</small></span>
-          <SignOutButton className="flex min-h-8 items-center justify-center rounded bg-[#e8edf1] px-3 text-xs font-semibold text-[#25363d]" />
+          <span><strong className="block text-xs">{user?.name ?? "Guest"}</strong><small className="block text-[9px] text-[#566166]">{user ? (user.role === "admin" ? "Administrator" : "Public user") : "Browsing the portal"}</small></span>
+          {user ? (
+            <SignOutButton className="flex min-h-8 items-center justify-center rounded bg-[#e8edf1] px-3 text-xs font-semibold text-[#25363d]" />
+          ) : (
+            <Link href="/login" className="flex min-h-8 items-center justify-center rounded bg-[#1d3d67] px-3 text-xs font-semibold text-white hover:bg-[#173253]">Sign in</Link>
+          )}
         </div>
       </div>
     </header>

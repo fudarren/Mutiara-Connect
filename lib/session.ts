@@ -10,6 +10,8 @@ type Account = { user: SessionUser; password: string };
 type SessionSnapshot = { user: SessionUser | null; error: string | null };
 type SessionResult = { ok: true } | { ok: false; error: string };
 
+export const SIGN_IN_REQUIRED_PATHS = ["/feedback", "/notification-preferences"];
+
 const accounts: Account[] = [
   { user: { username: "public", name: "Ahmad Rahman", role: "public" }, password: "public2026" },
   {
@@ -120,6 +122,7 @@ export function signOut(): SessionResult {
   return { ok: true };
 }
 
-export function userHome(user: SessionUser) {
+export function userHome(user: SessionUser, returnTo?: string | null) {
+  if (returnTo && SIGN_IN_REQUIRED_PATHS.includes(returnTo)) return returnTo;
   return user.role === "admin" ? "/admin" : "/";
 }
