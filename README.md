@@ -107,7 +107,17 @@ See [REFERENCES.md](./REFERENCES.md) for the technical sources used by the proje
 
 ## Admin and management dashboard
 
-All UI routes require sign-in. Signed-out visitors are sent to `/login`.
+Guests can browse the community homepage, construction map and detail pages,
+news, and notifications without signing in. `/login` also offers **Continue
+as guest**. Guest headers and mobile menus show **Sign in** instead of Sign out.
+
+Complaint/feedback submission at `/feedback` and notification preferences at
+`/notification-preferences` require sign-in. Direct visits and navigation links
+show a sign-in prompt for guests, and the forms and Telegram linking controls
+are not mounted. After signing in from that prompt, the user returns to the
+requested page. Return destinations are limited to these two internal routes.
+Signed-out visits to `/admin` routes are still redirected to `/login`.
+
 Use either of the two default accounts:
 
 | Role | Username | Password | Landing page |
@@ -119,7 +129,8 @@ The administrator can also open the community portal. Only this role sees
 the Staff navigation on desktop and mobile and can open `/admin` routes,
 including the legacy construction management page. A public user who enters
 an admin URL is sent to `/`. Sign-out is available in the public header,
-mobile menu, and admin sidebar.
+mobile menu, and admin sidebar, returning to `/login`. The visitor can then
+continue browsing as a guest.
 
 The session persists across refreshes in the current tab using sessionStorage.
 Only the username is stored. Identity and role are resolved from the hardcoded

@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { signIn, useHydrated, useUserSession, userHome } from "@/lib/session";
 
 export function LoginPage() {
   const router = useRouter();
+  const returnTo = useSearchParams().get("next");
   const hydrated = useHydrated();
   const { user, error: sessionError } = useUserSession();
   const [username, setUsername] = useState("");
@@ -14,8 +16,8 @@ export function LoginPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (hydrated && user) router.replace(userHome(user));
-  }, [hydrated, user, router]);
+    if (hydrated && user) router.replace(userHome(user, returnTo));
+  }, [hydrated, user, router, returnTo]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,6 +50,7 @@ export function LoginPage() {
           </label>
           <button type="submit" disabled={!hydrated || Boolean(user)} className="flex h-11 items-center justify-center rounded bg-[#1d3d67] px-4 text-sm font-semibold text-white hover:bg-[#173253] disabled:cursor-wait disabled:opacity-60">Sign in</button>
         </form>
+        <Link href="/" className="mt-4 flex min-h-11 items-center justify-center rounded border border-[#cbd4dc] px-4 text-sm font-semibold text-[#1d3d67] hover:bg-white">Continue as guest</Link>
       </div>
     </main>
   );

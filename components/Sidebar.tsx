@@ -114,8 +114,12 @@ export function MobileSidebar() {
         </div>
         <SidebarContents pathname={pathname} onNavigate={() => setOpen(false)} showLabels />
         <div className="mt-auto pt-6">
-          <span className="mb-3 block text-sm font-semibold">{user?.name}</span>
-          <SignOutButton className="flex min-h-10 w-full items-center justify-center rounded bg-[#e8edf1] px-4 text-sm font-semibold text-[#25363d]" />
+          <span className="mb-3 block text-sm font-semibold">{user?.name ?? "Guest"}</span>
+          {user ? (
+            <SignOutButton className="flex min-h-10 w-full items-center justify-center rounded bg-[#e8edf1] px-4 text-sm font-semibold text-[#25363d]" />
+          ) : (
+            <Link href="/login" onClick={() => setOpen(false)} className="flex min-h-10 w-full items-center justify-center rounded bg-[#1d3d67] px-4 text-sm font-semibold text-white hover:bg-[#173253]">Sign in</Link>
+          )}
         </div>
       </aside>
     </>
