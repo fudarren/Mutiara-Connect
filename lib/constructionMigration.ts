@@ -17,8 +17,9 @@ function sameRecord(left: ConstructionUpdate, right: ConstructionUpdate): boolea
  */
 export function ensureImpactSpecified(list: ConstructionUpdate[], defaults: ConstructionUpdate[]): ConstructionUpdate[] {
   return list.map((entry) => {
-    if (entry.impactLevel !== "Not specified") return entry;
-    const known = defaults.find((item) => item.updateId === entry.updateId && item.impactLevel !== "Not specified");
+    // Older browser data may still hold the removed "Not specified" value, so compare as a plain string.
+    if ((entry.impactLevel as string) !== "Not specified") return entry;
+    const known = defaults.find((item) => item.updateId === entry.updateId);
     const impactLevel =
       known?.impactLevel ??
       (entry.trafficRestriction === "full" || entry.workType === "Road Closure"

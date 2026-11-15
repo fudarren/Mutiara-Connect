@@ -38,7 +38,7 @@ export function buildConstructionNotifications(updates: ConstructionUpdate[]): C
       meta: update.affectedRoads.join(", "),
       extra: `${dateFormatter.format(new Date(`${update.startDate}T00:00:00+08:00`))} – ${dateFormatter.format(new Date(`${update.endDate}T00:00:00+08:00`))} · ${update.workingHours}`,
       tone: resolved ? "plain" : urgent ? "urgent" : "blue",
-      impact: update.impactLevel === "Not specified" ? "Impact not specified" : `${update.impactLevel} impact`,
+      impact: `${update.impactLevel} impact`,
     };
   }).sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp) || a.id.localeCompare(b.id));
 }
